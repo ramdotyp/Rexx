@@ -1,0 +1,3354 @@
+1
+ MEMBER NAME  ZB
+ /* REXX */
+ /*                                             */
+ /*                                             */
+ /* AUTHOR: Rama Mohan                          */
+ /*                                             */
+ /* This edit macro allows the user to BROWSE   */
+ /* the data set located on the line that the   */
+ /* cursor is on.                               */
+ /*                                             */
+ Address ISREDIT
+ "MACRO"
+ Address ISPEXEC "CONTROL ERRORS RETURN"
+   /***********************************************/
+   /*   BEGIN PROCESSING                          */
+   /***********************************************/
+   "(row,col) = CURSOR"
+   "(data1) = LINE " row              /* data1 = cursor line          */
+   /**********************************/
+   /* Find start of data set name    */
+   /**********************************/
+   dsnstart = Pos('DSN=',data1)       /* look for DSN=                */
+   If dsnstart = 0 then do            /* no DSN =                     */
+     dsnstart = Pos('DSNAME=',data1)  /* look for DSNAME=             */
+     If dsnstart = 0 then do          /* no DSN= or DSNAME=           */
+       "CURSOR = " row col            /* cursor pos                   */
+       If col < 1 then dsnstart = 1   /* needed for ZB line cmd       */
+       Else dsnstart = col            /* assume cursor on DSN         */
+     End
+     Else dsnstart = dsnstart + 7     /* DSNAME= specified in JCL     */
+   End /* if dsnstart = 0 */
+   Else dsnstart = dsnstart + 4       /* DSN = specified in JCL       */
+   /**********************************/
+   /* Find end of data set name      */
+   /**********************************/
+   dsnend = Pos(',',data1,dsnstart)   /* look for comma at end of dsn */
+   If dsnend = 0 then do              /* no comma found               */
+     dsnend = Pos(' ',data1,dsnstart) /* look for blank to end DSN    */
+     If dsnend = 0 then do            /* no blank or comma at end     */
+       zedsmsg = 'No end of DSN'
+       zedlmsg = 'The data set name is not terminated with a' ,
+                 'space or comma.'
+       Address ISPEXEC "SETMSG MSG(ISRZ001)"      /* msg - with alarm */
+       "CURSOR = " row col /* put cursor back to last position        */
+       Exit 8
+     End  /* if dsnend = 0 */
+     Else dsnend = dsnend - 1         /* DSN ends with blank          */
+   End /* if dsnend = 0 */
+   Else dsnend = dsnend - 1           /* DSN ends with comma          */
+   /**********************************/
+   /* BROWSE the data set            */
+   /**********************************/
+   dsn = Substr(data1,dsnstart,dsnend-dsnstart+1) /* extract dsn     */
+   Address ISPEXEC "BROWSE DATASET('"dsn"')"
+   If RC <> 0 then Address ISPEXEC "SETMSG MSG("ZERRMSG")"
+   "CURSOR = " row col /* put cursor back to last position        */
+   Exit 0
+ MEMBER NAME  SIGNON
+ PROC 0
+ CONTROL NOFLUSH
+ REALLOC SYSPROC TDEVGP20.TBCLRIV.CLIST
+ REALLOC ISPLLIB TDEVGP20.TBCLRIV.ISPLLIB
+ REALLOC ISPPLIB TDEVGP20.TBCLRIV.ISPPLIB
+ REALLOC ISPMLIB TDEVGP20.TBCLRIV.ISPMLIB
+ REALLOC ISPSLIB TDEVGP20.TBCLRIV.ISPSLIB
+ REALLOC ISPTLIB TDEVGP20.TBCLRIV.ISPTLIB
+ RECONCAT SYSPROC 'TITOGAW.TG.CLIST'
+ RECONCAT ISPSLIB 'TITOGAW.LIB.ISPSLIB'
+ EXEC 'TBPS.SIS.ALLOCS'
+ WRITE &STR(+++ BPS OVERRIDES IN EFFECT)
+ WRITE &STR(+  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +)
+ WRITE &STR(+                                                        +)
+ WRITE &STR(++            H A V E   A   N I C E   D A Y             ++)
+ WRITE &STR(++                                                      ++)
+ WRITE &STR(++     R A M A   M O H A N   J O N N A L A G A D D A    ++)
+ WRITE &STR(+                                                        +)
+ WRITE &STR(+  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +)
+ %BPSNEWS
+ PDF
+ MEMBER NAME  ZE
+ /* REXX */
+ /*                                             */
+ /*                                             */
+ /* AUTHOR: Rama Mohan                          */
+ /*                                             */
+ /* This edit macro allows the user to BROWSE   */
+ /* the data set located on the line that the   */
+ /* cursor is on.                               */
+ /*                                             */
+ Address ISREDIT
+ "MACRO"
+ Address ISPEXEC "CONTROL ERRORS RETURN"
+   /***********************************************/
+   /*   BEGIN PROCESSING                          */
+   /***********************************************/
+   "(row,col) = CURSOR"
+   "(data1) = LINE " row              /* data1 = cursor line          */
+   /**********************************/
+   /* Find start of data set name    */
+   /**********************************/
+   dsnstart = Pos('DSN=',data1)       /* look for DSN=                */
+   If dsnstart = 0 then do            /* no DSN =                     */
+     dsnstart = Pos('DSNAME=',data1)  /* look for DSNAME=             */
+     If dsnstart = 0 then do          /* no DSN= or DSNAME=           */
+       "CURSOR = " row col            /* cursor pos                   */
+       If col < 1 then dsnstart = 1   /* needed for ZB line cmd       */
+       Else dsnstart = col            /* assume cursor on DSN         */
+     End
+     Else dsnstart = dsnstart + 7     /* DSNAME= specified in JCL     */
+   End /* if dsnstart = 0 */
+   Else dsnstart = dsnstart + 4       /* DSN = specified in JCL       */
+   /**********************************/
+   /* Find end of data set name      */
+   /**********************************/
+   dsnend = Pos(',',data1,dsnstart)   /* look for comma at end of dsn */
+   If dsnend = 0 then do              /* no comma found               */
+     dsnend = Pos(' ',data1,dsnstart) /* look for blank to end DSN    */
+     If dsnend = 0 then do            /* no blank or comma at end     */
+       zedsmsg = 'No end of DSN'
+       zedlmsg = 'The data set name is not terminated with a' ,
+                 'space or comma.'
+       Address ISPEXEC "SETMSG MSG(ISRZ001)"      /* msg - with alarm */
+       "CURSOR = " row col /* put cursor back to last position        */
+       Exit 8
+     End  /* if dsnend = 0 */
+     Else dsnend = dsnend - 1         /* DSN ends with blank          */
+   End /* if dsnend = 0 */
+   Else dsnend = dsnend - 1           /* DSN ends with comma          */
+   /**********************************/
+   /* BROWSE the data set            */
+   /**********************************/
+   dsn = Substr(data1,dsnstart,dsnend-dsnstart+1) /* extract dsn     */
+   Address ISPEXEC "EDIT DATASET('"dsn"')"
+   If RC <> 0 then Address ISPEXEC "SETMSG MSG("ZERRMSG")"
+   "CURSOR = " row col /* put cursor back to last position        */
+   Exit 0
+ MEMBER NAME  ZV
+ /* REXX */
+ /*                                             */
+ /*                                             */
+ /* AUTHOR: Rama Mohan                          */
+ /*                                             */
+ /* This edit macro allows the user to BROWSE   */
+ /* the data set located on the line that the   */
+ /* cursor is on.                               */
+ /*                                             */
+ Address ISREDIT
+ "MACRO"
+ Address ISPEXEC "CONTROL ERRORS RETURN"
+   /***********************************************/
+   /*   BEGIN PROCESSING                          */
+   /***********************************************/
+   "(row,col) = CURSOR"
+   "(data1) = LINE " row              /* data1 = cursor line          */
+   /**********************************/
+   /* Find start of data set name    */
+   /**********************************/
+   dsnstart = Pos('DSN=',data1)       /* look for DSN=                */
+   If dsnstart = 0 then do            /* no DSN =                     */
+     dsnstart = Pos('DSNAME=',data1)  /* look for DSNAME=             */
+     If dsnstart = 0 then do          /* no DSN= or DSNAME=           */
+       "CURSOR = " row col            /* cursor pos                   */
+       If col < 1 then dsnstart = 1   /* needed for ZB line cmd       */
+       Else dsnstart = col            /* assume cursor on DSN         */
+     End
+     Else dsnstart = dsnstart + 7     /* DSNAME= specified in JCL     */
+   End /* if dsnstart = 0 */
+   Else dsnstart = dsnstart + 4       /* DSN = specified in JCL       */
+   /**********************************/
+   /* Find end of data set name      */
+   /**********************************/
+   dsnend = Pos(',',data1,dsnstart)   /* look for comma at end of dsn */
+   If dsnend = 0 then do              /* no comma found               */
+     dsnend = Pos(' ',data1,dsnstart) /* look for blank to end DSN    */
+     If dsnend = 0 then do            /* no blank or comma at end     */
+       zedsmsg = 'No end of DSN'
+       zedlmsg = 'The data set name is not terminated with a' ,
+                 'space or comma.'
+       Address ISPEXEC "SETMSG MSG(ISRZ001)"      /* msg - with alarm */
+       "CURSOR = " row col /* put cursor back to last position        */
+       Exit 8
+     End  /* if dsnend = 0 */
+     Else dsnend = dsnend - 1         /* DSN ends with blank          */
+   End /* if dsnend = 0 */
+   Else dsnend = dsnend - 1           /* DSN ends with comma          */
+   /**********************************/
+   /* BROWSE the data set            */
+   /**********************************/
+   dsn = Substr(data1,dsnstart,dsnend-dsnstart+1) /* extract dsn     */
+   Address ISPEXEC "VIEW DATASET('"dsn"')"
+   If RC <> 0 then Address ISPEXEC "SETMSG MSG("ZERRMSG")"
+   "CURSOR = " row col /* put cursor back to last position        */
+   Exit 0
+ MEMBER NAME  MJCL
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC EDIT DATASET('TIRAJON.JCL')
+ MEMBER NAME  BSRC
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.SRCLIB')
+ MEMBER NAME  BCARD
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.CARDLIB')
+ MEMBER NAME  BJCL
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.JCLLIB')
+ MEMBER NAME  BPROC
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.PROCLIB')
+ MEMBER NAME  QCARD
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.BATCH.QA.CARDLIB')
+ MEMBER NAME  QJCL
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.BATCH.QA.JCLLIB')
+ MEMBER NAME  QPROC
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.BATCH.QA.PROCLIB')
+ MEMBER NAME  BCPY
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.COPYLIB')
+ MEMBER NAME  MPROC
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC EDIT DATASET('TIRAJON.PROC')
+ MEMBER NAME  QSRC
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC VIEW DATASET('BISG.SRCLIB')
+ MEMBER NAME  MCLIST
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC EDIT DATASET('TIRAJON.CLIST')
+ MEMBER NAME  MCOPY
+ PROC 0
+ ISREDIT MACRO
+ ISPEXEC CONTROL ERRORS RETURN
+    ISPEXEC EDIT DATASET('TIRAJON.COPY')
+ MEMBER NAME  EMPTY
+ /**  REXX -- EMPTY FILE OR PDS (UNDER ISPF OPTION 3.4)  **/
+    SAVEMSG = MSG("OFF")
+    PARSE ARG ZINPDSN
+    IF SUBSTR(ZINPDSN,1,1) = '?' THEN SIGNAL DISPDOC
+    LDSI = LISTDSI(ZINPDSN DIRECTORY)
+    IF SYSDSORG = "PS"
+       THEN DO
+          "ALLOC DD(ZAPFILE)  DSN("ZINPDSN") SHR REUSE"
+          "EXECIO 0 DISKW" ZAPFILE "(OPEN"
+          "EXECIO 0 DISKW" ZAPFILE "(FINIS"
+          FINPDSN = LEFT(SUBSTR(ZINPDSN,2,LENGTH(ZINPDSN)-2),44)
+          SAY FINPDSN "EMPTIED..."
+       END
+    ELSE IF SYSDSORG = "PO" THEN DO
+       ZNEWDSN = "'"USERID()".$$$TEMP.NEWDSN.S"TIME('S')"'"
+       "ALLOC DSN("ZNEWDSN") NEW LIKE("ZINPDSN")"
+       "DELETE" ZINPDSN
+       "RENAME" ZNEWDSN ZINPDSN
+       FINPDSN = LEFT(SUBSTR(ZINPDSN,2,LENGTH(ZINPDSN)-2),44)
+       SAY FINPDSN "EMPTIED..."
+    END
+    ELSE DO
+       SAY FINPDSN "CAN'T HANDLE DATA SET ORG" SYSDSORG
+    END
+    EXIT(1)
+
+ DISPDOC:
+    ADDRESS TSO "CLEAR"
+    SAY "EMPTY -- DELETE ALL DATA OR MEMBERS FROM DS LIST FILE     "
+    SAY
+    SAY " FORMAT "
+    SAY
+    SAY "    EMPTY                                                 "
+    SAY
+    SAY "       DELETE ALL DATA FROM SEQUENTIAL FILE SPECIFIED IN  "
+    SAY "       ISPF DS LIST (SIMPLY OPENS AND CLOSES THE FILE).   "
+    SAY
+    SAY "       CREATES A TEMPORARY PDS WITH SAME ATTRIBUTES AS    "
+    SAY "       SPECIFIED PDS (OBVIOUSLY WITH NO MEMBERS), DELETES "
+    SAY "       ORIGINAL PDS AND RENAMES TEMPORARY PDS TO OLD NAME."
+    SAY
+    SAY "       CAUSES DS LIST SCREEN TO BE REFRESHED.             "
+    SAY
+    EXIT(1)
+
+
+ MEMBER NAME  COLS
+ /************************* REXX ***********************************
+  *
+  * THIS REXX WAS WRITTEN SO THAT YOU CAN TYPE COLS ON THE COMMAND
+  * LINE IN AN EDIT SESSION JUST LIKE YOU DO IN A BROWSE SESSION,
+  * INSTEAD OF HAVING TO PUT COLS ON A LINE NUMBER.
+  * WRITTEN 02/1993 BY JEFFREY A. RICE...
+  *
+  ******************************************************************/
+ TRACE O
+ DEFINE = MSG("OFF")
+ ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ ADDRESS ISREDIT
+ "MACRO"
+ "(MACLVL) = MACRO_LEVEL"
+ IF MACLVL  =  001  THEN DO
+    COUNTER = 1
+    "(WIDTH) = DATA_WIDTH"
+ /*
+  * CHECK FOR NUMBER ON COB MODE  -  IF SO THEN NUMBERS ARE TO BE
+  * REDUCED BY 6 BECAUSE THE EDITOR IGNORES COLUMNS 1-6
+  */
+    "(NUM1,NUM2) = NUMBER"
+    IF NUM1  =  "ON"  &  POS(" COBOL ",NUM2)  >  0  THEN DO
+       COUNTER = COUNTER + 6
+       WIDTH = WIDTH + 6
+    END
+ /*
+  * BUILD A COLUMNS LINE FOR THE WIDTH OF THE CURRENT EDIT SESSION.
+  */
+    COLUMNS = ""
+    DO WHILE COUNTER <= WIDTH
+       IF RIGHT(COUNTER,1) = "0" THEN DO
+          COLUMNS = COLUMNS""LEFT(RIGHT(COUNTER,2),1)
+       END
+       ELSE DO
+          IF RIGHT(COUNTER,1) = "5" THEN
+             COLUMNS = COLUMNS"+"
+          ELSE
+             COLUMNS = COLUMNS"-"
+       END
+       COUNTER = COUNTER + 1
+    END
+ /*
+  * DISPLAY COLUMNS LINE BUILT
+  */
+    "LINE_BEFORE .ZCSR = INFOLINE '"COLUMNS"'"
+    "UP 1"
+ END
+ ELSE DO
+    ZEDLMSG = "%COLS CAN ONLY BE EXECUTED AS AN EDIT MACRO FROM",
+              "AN EDIT SESSION."
+    ADDRESS ISPEXEC "SETMSG MSG(ISRZ000)"
+ END
+ EXIT
+
+
+ MEMBER NAME  DISPVAR
+ /* REXX - GEN A DISPLAY STATEMENT FOR THE VARIABLE AT THE CURSOR */
+
+ ADDRESS ISPEXEC
+ "ISPEXEC CONTROL ERRORS RETURN"
+ "ISREDIT MACRO (PARMS) NOPROCESS"
+ IF  RC > 0 THEN DO
+    "ISPEXEC SETMSG MSG(CBL000A)"
+    EXIT
+ END
+ IF PARMS = '?' THEN CALL DISPDOC
+
+ COL7     = 7
+ COL8     = 8
+ COL11    = 11
+ COL20    = 20
+ LEN72    = 72
+ SPACES11 = '           '
+
+ "ISREDIT (QLINE,QCOL) = CURSOR"
+ IF  QLINE = 0 ³ QCOL = 0 THEN DO
+    "ISPEXEC SETMSG MSG(CBL000C)"
+    EXIT
+ END
+
+    /* GET THE DATA LINE WITH THE FIELD NAME TO BE PROCESSED */
+ "ISREDIT (QLDATA) = LINE" QLINE
+ QLDATA = SUBSTR(QLDATA,1,LEN72)
+ "ISREDIT (XLDATA) = LINE" QLINE+1
+ IF SUBSTR(XLDATA,7,1) <> '*',
+       & SUBSTR(XLDATA,7,1) <> '/',
+       & SUBSTR(XLDATA,7,1) <> 'D',
+    THEN XLDATA = SUBSTR(XLDATA,8,LEN72)
+    ELSE XLDATA = " "
+
+    /* IF 'IN' OR 'OF' ON NEXT LINE, APPEND IT TO CURSOR LINE */
+ IF  (  POS(' IN ',TRANSLATE(QLDATA)) > 0,
+      ³ POS(' IN ',TRANSLATE(XLDATA)) > 0,
+      ³ POS(' OF ',TRANSLATE(QLDATA)) > 0,
+      ³ POS(' OF ',TRANSLATE(XLDATA)) > 0  ),
+    THEN QLDATA = QLDATA ³³ XLDATA
+
+    /* FIGURE END OF VARIABLE */
+ QLEN = LENGTH(QLDATA)
+ SPC_CHARS = " ,.='"
+ DO OK = (QCOL+1) TO QLEN BY 1,
+    WHILE ( VERIFY(SUBSTR(QLDATA,OK,1),SPC_CHARS) <> 0 )
+ END OK
+ QEND = OK - 1
+
+    /* FIGURE IF 'OF' OR 'IN' AFTER VARIABLE AND INCLUDE AS VARIABLE */
+ DO QQ = (QEND+1) TO QLEN BY 1 WHILE ( SUBSTR(QLDATA,QQ,1) = ' ' )
+ END QQ
+ IF TRANSLATE(SUBSTR(QLDATA,QQ,3)) = 'IN ',
+       ³ TRANSLATE(SUBSTR(QLDATA,QQ,3)) = 'OF ' THEN DO
+    DO RR = QQ+2 TO QLEN BY 1 WHILE ( SUBSTR(QLDATA,RR,1) = ' ' )
+    END RR
+    DO SS = RR TO QLEN BY 1  WHILE ( SUBSTR(QLDATA,SS,1) <> ' ' )
+    END SS
+    QEND = SS - 1
+ END
+
+    /* FIGURE IF SUBSCRIPT OR REF MOD AND INCLUDE AS VARIABLE */
+ DO 2
+    DO QQ = (QEND+1) TO QLEN BY 1 WHILE ( SUBSTR(QLDATA,QQ,1) = ' ' )
+    END QQ
+    IF (QQ < QLEN) & (SUBSTR(QLDATA,QQ,1) = '(')  THEN DO
+       DO RR = (QQ+1) TO QLEN WHILE ( SUBSTR(QLDATA,RR,1) <> ')')
+       END RR
+       QEND = RR
+    END
+ END
+
+ IF QEND > 72 THEN QLINE = QLINE + 1
+
+    /* FIGURE START OF VARIABLE */
+ DO OK = QCOL TO 1 BY -1,
+    WHILE ( VERIFY(SUBSTR(QLDATA,OK,1),SPC_CHARS) <> 0 )
+ END OK
+ IF OK < 1 THEN QSTART = 1
+ ELSE QSTART = OK + 1
+
+ QLEN = (QEND - QSTART) + 1
+ QWORD = SUBSTR(QLDATA,QSTART,QLEN)
+
+    /* ELIMINATE DOUBLE BLANKS */
+ QQ = POS('  ',QWORD)
+ DO WHILE ( QQ <> 0 )
+    QWORD = SUBSTR(QWORD,1,QQ) ³³ SUBSTR(QWORD,QQ+2)
+    QQ = POS('  ',QWORD)
+ END
+
+ QWORD = STRIP(QWORD,'B','(')
+ W_LEN = LENGTH(QWORD)
+
+ IF  W_LEN > 16 THEN DO
+    IF  W_LEN > 39 THEN QWORD_X = SUBSTR(QWORD,1,34)³³'*'
+    ELSE QWORD_X = QWORD
+    DLINE1 = SPACES11"DISPLAY '~DEBUG~ "QWORD_X" = >'"
+    DLINE2 = SPACES11"  "QWORD" '< ~DEBUG~'"
+ END
+ ELSE DLINE1 = SPACES11"DISPLAY '~DEBUG~ "QWORD" = >' ",
+    ³³ QWORD" '<'"
+
+ IF  W_LEN > 16 THEN "ISREDIT LINE_AFTER" QLINE" = (DLINE2)"
+ "ISREDIT LINE_AFTER" QLINE" = (DLINE1)"
+ 'ISREDIT CURSOR = 'QLINE','QCOL
+ EXIT
+
+ DISPDOC:
+    ADDRESS TSO "CLEAR"
+    SAY "DISPVAR - ADD DISPLAY DEBUG FOR VARIABLE UNDER CURSOR     "
+    SAY
+    SAY " FORMAT "
+    SAY
+    SAY "    DISPVAR                                               "
+    SAY
+    SAY "       ADDS ONE OR TWO LINES THAT DISPLAY THE VARIABLE ON "
+    SAY "       WHICH THE CURSOR WAS POSITIONED. WILL HANDLE BOTH  "
+    SAY "       IN AND ON EVEN IF THEY ARE ON THE NEXT LINE, AND   "
+    SAY "       BOTH SUBSCRIPT AND REFERENCE MODIFICATION IF ON    "
+    SAY "       THE SAME LINE. THE CURSOR MUST BE POSITIONED ON    "
+    SAY "       THE VARIABLE NAME. FOR EXAMPLE, IF THE CURSOR IS   "
+    SAY "       ON NUMB-RECS-WRITTEN:                              "
+    SAY
+    SAY "           ADD 1 TO NUMB-RECS-WRITTEN                     "
+    SAY "               OF WS-MISC ( 12 )                          "
+    SAY
+    SAY "       THE FOLLOWING LINES WILL BE INSERTED:              "
+    SAY
+    SAY "DISPLAY '~DEBUG~ NUMB-RECS-WRITTEN OF WS-MISC ( 12 ) = >' "
+    SAY "          NUMB-RECS-WRITTEN OF WS-MISC ( 12 ) '< ~DEBUG~' "
+    SAY
+    SAY "       USE DELPARA TO REMOVE ALL THE INSERTED LINES.      "
+    SAY
+    EXIT(0)
+
+
+ MEMBER NAME  IE
+ /** REXX - INSERT EVALUATE STRUCTURE **/
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (INDENT) NOPROCESS"
+
+    IF INDENT = "" THEN INDENT = 4
+    ADDRESS ISREDIT
+    "(LINE,COL) = CURSOR"
+    "(REC) = LINE" LINE
+    DO II = 8 TO 72 WHILE(SUBSTR(REC,II,1) = ' ')
+    END II
+    IF SUBSTR(REC,II,5) = 'ELSE ',
+          ³ SUBSTR(REC,II,3) = 'IF ',
+          ³ SUBSTR(REC,II,8) = 'PERFORM ',
+          ³ SUBSTR(REC,II,5) = 'WHEN ',
+       THEN OFFSET = II + INDENT - 1
+       ELSE OFFSET = II - 1
+    IF OFFSET < 11 ³ OFFSET > 58 THEN OFFSET = 11
+    INDENT2 = OFFSET + INDENT + INDENT
+    INDENT  = OFFSET + INDENT
+    REC = COPIES(' ',OFFSET)  ³³ "END-EVALUATE"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = COPIES(' ',INDENT2) ³³ "..."
+    "LINE_AFTER (LINE) = (REC)"
+    REC = COPIES(' ',INDENT)  ³³ "WHEN OTHER"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = COPIES(' ',INDENT2) ³³ "..."
+    "LINE_AFTER (LINE) = (REC)"
+    REC = COPIES(' ',INDENT)  ³³ "WHEN ..."
+    "LINE_AFTER (LINE) = (REC)"
+    REC = COPIES(' ',INDENT2) ³³ "..."
+    "LINE_AFTER (LINE) = (REC)"
+    REC = COPIES(' ',INDENT)  ³³ "WHEN ..."
+    "LINE_AFTER (LINE) = (REC)"
+    REC = COPIES(' ',OFFSET)  ³³ "EVALUATE ..."
+    "LINE_AFTER (LINE) = (REC)"
+    "LOCATE" LINE
+    LINE_X  = LINE + 1
+    COL_X   = INDENT2 + 2
+    "CURSOR =" LINE_X COL_X
+    RETURN(0)
+
+ MEMBER NAME  ISORT
+ /** REXX - INSERT SORT STEP JCL **/
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (PARM) NOPROCESS"
+
+    ADDRESS ISREDIT
+    "(LINE,COL) = CURSOR"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTWK06     DD       UNIT=SYSDA,SPACE=(CYL,(050,050))"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTWK05     DD       UNIT=SYSDA,SPACE=(CYL,(050,050))"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTWK04     DD       UNIT=SYSDA,SPACE=(CYL,(050,050))"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTWK03     DD       UNIT=SYSDA,SPACE=(CYL,(050,050))"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTWK02     DD       UNIT=SYSDA,SPACE=(CYL,(050,050))"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTWK01     DD       UNIT=SYSDA,SPACE=(CYL,(050,050))"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSOUT       DD       SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTLIST     DD       SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSPRINT     DD       SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "   SUM     FIELDS=NONE"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "                    ....,....,CH,EQ,C'...')"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "     INCLUDE  COND=(....,....,CH,EQ,C'...',OR,"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "   SORT    FIELDS=(0001,0001,CH,A)"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSIN        DD       *"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//             DCB=(GDG,RECFM=FB,LRECL=1000,BLKSIZE=10000)"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//             DSN=...,"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//             SPACE=(CYL,(0010,0010),RLSE),"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTOUT      DD       DISP=(,CATLG),UNIT=SYSDA,"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORTIN       DD       DISP=SHR,DSN=..."
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SORT       EXEC     PGM=SORT,REGION=256M"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    "LOCATE" LINE
+    LINE_X  = LINE + 3
+    COL_X   = 38
+    "CURSOR =" LINE_X COL_X
+    RETURN(0)
+
+ MEMBER NAME  ICOPY
+ /** REXX - INSERT SORT STEP JCL **/
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (PARM) NOPROCESS"
+
+    ADDRESS ISREDIT
+    "(LINE,COL) = CURSOR"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSIN     DD DUMMY"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSPRINT  DD SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSOUT    DD SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//             DCB=(GDG,RECFM=FB,LRECL=143,BLKSIZE=0)"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//             UNIT=TEST,"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//             SPACE=(CYL,(10,10),RLSE),"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//             DISP=(NEW,CATLG,DELETE),"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSUT2    DD DSN=TIRAJON.B.IMD92.BCTOTX,"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSUT1    DD DISP=SHR,DSN=BCCC.IMD92.BCTOTX"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//STEP01  EXEC PGM=IEBGENER"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    "LOCATE" LINE
+    LINE_X  = LINE + 3
+    COL_X   = 38
+    "CURSOR =" LINE_X COL_X
+    RETURN(0)
+
+ MEMBER NAME  IIDCAMS
+ /** REXX - INSERT SORT STEP JCL **/
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (PARM) NOPROCESS"
+
+    ADDRESS ISREDIT
+    "(LINE,COL) = CURSOR"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "         OUTFILE(OFILE)"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "    REPRO INFILE(IFILE) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSIN     DD *"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//OFILE     DD DSN=TC.CCC.CCM55.ZCCMBH,DISP=SHR"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//IFILE     DD DSN=BCCC.CCM55.ZCCMBH(0),DISP=SHR"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSPRINT  DD SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//STEP1200 EXEC PGM=IDCAMS"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "         INDEX(NAME(TC.CCC.CCM55.ZCCMBH.I))"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "         DATA(NAME(TC.CCC.CCM55.ZCCMBH.D)) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "             MODEL (SQ0.Q00.CCM55.ZCCMBH)) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "             CYL (200 100) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "             VOL (TBPS17 TBPS18 TBPS19) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "             SHAREOPTIONS (3 3) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "             REUSE -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "    DEFINE CLUSTER (NAME(TC.CCC.CCM55.ZCCMBH) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "        IF LASTCC = 8 THEN SET MAXCC = 0"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "    DELETE (TC.CCC.CCM55.ZCCMBH) CLUSTER PURGE"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSIN     DD *"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSPRINT  DD SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//STEP1100 EXEC PGM=IDCAMS"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    "LOCATE" LINE
+    LINE_X  = LINE + 3
+    COL_X   = 38
+    "CURSOR =" LINE_X COL_X
+    RETURN(0)
+
+ MEMBER NAME  CC
+ /**  REXX -- INTERACTIVE CALCULATIONS USING REXX INTERPRET COMMAND  **/
+     NUMERIC DIGITS 30
+     SAY "**  ENTER CALCUATIONS, ? FOR HELP, NULL ENTER TO QUIT...  **"
+     DO FOREVER
+         PARSE PULL X
+         IF X = "" THEN LEAVE
+         IF X = "?" THEN SIGNAL DISPDOC
+                    ELSE INTERPRET "SAY" X
+     END
+     EXIT(0)
+
+ DISPDOC:
+    ADDRESS TSO "CLEAR"
+    SAY "CC -- SIMPLE TSO CALCULATOR                            "
+    SAY
+    SAY "  CC                                                   "
+    SAY
+    SAY "    ALL STANDARD REXX ARITHMETIC STATEMENTS MAY BE     "
+    SAY "    ENTERED AND THE RESPONSE IMMEDIATELY FOLLOWS.      "
+    SAY "    FOR EXAMPLE, 27998//80 RETURNS 78. PARENTHESES     "
+    SAY "    ARE ALLOWED, E.G. (212-32)*5/9.                    "
+    SAY
+    SAY "    A PRESS OF <ENTER> WITHOUT ANY INPUT TERMINATES    "
+    SAY "    THE MACRO.                                         "
+    SAY
+    SAY "    IN ADDITION TO + FOR ADDITION, - FOR SUBTRACTION,  "
+    SAY "    * FOR MULTIPLICATION AND / FOR DIVISION, // GIVES  "
+    SAY "    THE REMAINDER, % DOES PURE INTEGER DIVISION AND    "
+    SAY "    ** PERFORMS EXPONENTIATION.                        "
+    SAY
+    EXIT(1)
+ MEMBER NAME  DESC
+ /* REXX -- GET AND DISPLAY LRECL, BLKSIZE AND NUMBER OF RECORDS       */
+    ADDRESS ISPEXEC
+    "ISREDIT MACRO"
+    IF RC = 20 THEN DO
+        ZEDSMSG = "NOT A TSO COMMAND"
+       "SETMSG MSG(ISRZ000)";EXIT
+    END
+    ADDRESS ISREDIT "(LREC) = LRECL"
+    ADDRESS ISREDIT "(BLKS) = BLKSIZE"
+    ADDRESS ISREDIT "(NUM)  = LINENUM .ZLAST"
+    LREC=LREC+0;BLKS=BLKS+0;NUM=NUM+0
+    ZEDSMSG = LREC"/"BLKS"/"NUM
+    "SETMSG MSG(ISRZ000)"
+    EXIT(0)
+ MEMBER NAME  COUNTX
+ /***  REXX -- SHOW # RECORDS IN FILE (UNDER ISPF OPTION 3.4)  ***/
+    PARSE ARG ZINPDSN
+    IF SUBSTR(ZINPDSN,1,1) = '?' THEN SIGNAL DISPDOC
+    ISPEXEC VGET (ZDLRECFM) SHARED
+    ISPEXEC VGET (ZDLLRECL) SHARED
+    ISPEXEC VGET (ZDLBLKSZ) SHARED
+    ISPEXEC VGET (ZDLDSORG) SHARED
+    IF ZDLDSORG = "PS" ³ ZDLDSORG = "VS" ³ ZDLDSORG = "PS-E"
+       THEN DO
+          "ALLOC DD(INFILE)   DSN("ZINPDSN") SHR REUSE BUFNO(30)"
+          "ALLOC DD(OUTFILE)  DUMMY BLKSIZE(32000) REUSE"
+          "ALLOC DD(SYSPRINT) DSN(*) REUSE"
+          CALL OUTTRAP "SYSPRINT." , "*"
+          "REPRO INFILE(INFILE) OUTFILE(OUTFILE) "
+          CALL OUTTRAP "OFF"
+          DO II = 1 TO SYSPRINT.0
+             PARSE VAR SYSPRINT.II " WAS " #RECS
+             IF DATATYPE(#RECS) = "NUM" THEN LEAVE
+          END II
+          "FREE DD(INFILE OUTFILE)"
+          "ALLOC DD(SYSPRINT) DSN(*) REUSE"
+          $RECS = ""
+          DO JJ = 3 TO 21 BY 3 WHILE JJ < LENGTH(#RECS)
+             $RECS = "," ³³ SUBSTR(#RECS,LENGTH(#RECS)-JJ+1,3) ³³ $RECS
+          END
+          $RECS = SUBSTR(#RECS,1,LENGTH(#RECS)+3-JJ) ³³ $RECS
+          FINPDSN = LEFT(SUBSTR(ZINPDSN,2,LENGTH(ZINPDSN)-2),44)
+          IF ZDLDSORG = "PS" THEN DO
+             SAY FINPDSN"("LEFT(ZDLRECFM,4,' ')"/"ZDLLRECL"/"ZDLBLKSZ")",
+                RIGHT($RECS,14)
+          END
+          ELSE DO
+             SAY FINPDSN RIGHT($RECS,14)
+          END
+       END
+       ELSE DO
+           SAY "DSORG" ZDLDSORG "IS NOT SUPPORTED..."
+        END
+     EXIT
+
+  DISPDOC:
+     ADDRESS TSO "CLEAR"
+     SAY "COUNTX - SHOW # OF RECORDS IN SEQ FILE UNDER DS LIST      "
+     SAY
+     SAY " FORMAT "
+     SAY
+     SAY "    COUNTX  ( ? )                                         "
+     SAY
+     SAY "       OVERTYPED ON A DS LIST SEQUENTIAL OR VSAM DATA SET,"
+     SAY "       COUNTX WILL DISPLAY THE DATA SET NAME (SINCE IT    "
+     SAY "       CAN BE INVOKED ON MULTIPLE LINES) AND THE NUMBER   "
+     SAY "       OF RECORDS IN THE FILE. IT WILL ALSO SUPPLY THE    "
+     SAY "       RECORD FORMAT, LOGICAL RECORD LENGTH AND BLOCK     "
+     SAY "       FOR SEQUENTIAL DATASETS.                           "
+     EXIT(1)
+
+ MEMBER NAME  LJUST
+ /**  REXX -- LEFT JUSTIFIES DATA USING CC/C## RANGE OR DEFAULTS  **/
+ /*           TO ENTIRE FILE; ACCEPTS COLUMNS OR USES ISPF BOUNDS */
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "LJUST MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (LEFT,RIGHT) NOPROCESS"
+    IF LEFT = '?' THEN SIGNAL DISPDOC
+
+    IF LEFT <> "" AND RIGHT = "" THEN DO
+       "ISREDIT (L2,RIGHT) = BOUNDS"
+       END
+
+    "PROCESS RANGE C"
+    IF RC > 0 THEN DO
+       "(TOP) = LINENUM .ZFIRST"
+       "(BOT) = LINENUM .ZLAST"
+    END
+    ELSE DO
+       "(TOP) = LINENUM .ZFRANGE"
+       "(BOT) = LINENUM .ZLRANGE"
+    END
+
+    "ISREDIT("LB","RB") = BOUNDS"
+    IF LEFT  <> "" THEN LB = LEFT
+    IF RIGHT <> "" THEN RB = RIGHT
+
+  DO II = TOP TO BOT BY 1
+       "ISREDIT (RECORD) = LINE &II"
+       DO JJ = LB TO RB BY 1 WHILE(SUBSTR(RECORD,JJ,1) = ' ')
+          END
+       IF LB < JJ THEN DO
+          RECORD = SUBSTR(RECORD,1,LB-1) ³³ SUBSTR(RECORD,JJ,RB-JJ+1),
+             ³³ SUBSTR(RECORD,LB,JJ-LB)  ³³ SUBSTR(RECORD,RB+1)
+          "ISREDIT LINE &II = &STR(RECORD)"
+          END
+       END
+
+ QUIT:
+    ADDRESS ISPEXEC
+    X = MSG(SAVEMSG)
+    ADDRESS ISREDIT "LOCATE" TOP
+    EXIT(1)
+
+ DISPDOC:
+    ADDRESS TSO "CLEAR"
+    SAY "LJUST - LEFT JUSTIFY TEXT W/IN BOUNDS                    "
+    SAY
+    SAY " FORMAT "
+    SAY
+    SAY "    LJUST   ( LEFT-COLUMN  RIGHT-COLUMN )                "
+    SAY
+    SAY "       WILL CAUSE THE MARKED (VIA C/CC/C##) RANGE OF     "
+    SAY "       LINES TO BE LEFT JUSTIFIED WITHIN THE BOUNDS THEN "
+    SAY "       IN FORCE.  IF NO RANGE IS SPECIFIED, THE ENTIRE   "
+    SAY "       FILE IS PROCESSED.  THE FIRST AND THE LAST        "
+    SAY "       NON-BLANK CHARACTERS WITHIN THE BOUNDS DETERMINE  "
+    SAY "       THE SIZE OF THE DATA TO BE LEFT JUSTIFIED.        "
+    SAY "       SPECIFYING A LEFT COLUMN AND LEFT COLUMN WILL     "
+    SAY "       CAUSE ONLY THE DATA IN THOSE COLUMNS TO BE        "
+    SAY "       JUSTIFIED.                                        "
+    SAY
+    SAY " EXAMPLE "
+    SAY
+    SAY
+    SAY "    LJUST  1 50                                          "
+    SAY "       WILL CAUSE THE TEST IN COLUMNS 1 THRU 50 TO BE    "
+    SAY "       SHIFTED LEFT SO THAT THE FIRST NON BLANK IN THOSE "
+    SAY "       COLUMNS WILL BE IN POSITION 1.                    "
+    SAY
+    EXIT(1)
+
+ MEMBER NAME  PARADISP
+ ISREDIT MACRO
+ ISREDIT RESET                                  /* RESET ALL EDIT CMD*/
+ ISREDIT EXCLUDE    ALL                         /* X OUT ALL LINES   */
+          SET        &ENVTYP  = 'PDS'
+ ISREDIT SEEK       7 ' PROCEDURE '     FIRST   /* F PROCDURE DIVSN */
+          IF         &LASTCC  = 0 THEN    +
+          GOTO CONTNU:
+ ISREDIT SEEK      1 ' PROCEDURE '      FIRST
+          IF         &LASTCC  > 0 THEN    +
+          DO
+ WRITE NEITHER PDS OR LIBR DATASET
+ ISREDIT RESET                                  /* RESET ALL EDIT CMD*/
+          EXIT       CODE(0)
+          END
+          ELSE     +
+          SET        &ENVTYP  = 'LIBR'
+ CONTNU:  DO
+          IF         &ENVTYP  = 'PDS'  THEN +
+          DO
+          SET        &PARAOSET = 7
+          SET        &DISPOSET = 12
+          END
+          ELSE       +
+          DO
+          SET        &PARAOSET = 1
+          SET        &DISPOSET = 6
+          END
+          SET        &MASKD = &STR(DISPLAY 'DEBUG~ )
+ ISREDIT (CURLIN)   = LINENUM .ZCSR             /* ID 1ST LINE       */
+          SET        &CURLIN = &CURLIN + 1       /*        OF        */
+ ISREDIT LABEL      (CURLIN) = .A               /*          CODE     */
+ ISREDIT FIND       ALL P' #' &PARAOSET .A .ZL  /* FIND ALL PARA NMS */
+ ISREDIT (CURLIN)   = LINENUM .ZCSR             /* SAVE LN# OF 1ST   */
+          SET        &LASTCC = 0                 /* PARA AND SET CC */
+          SET        &MAXCC  = 0
+          END
+ /*                                                                   */
+ /*  THIS DO RTN FINDS EACH PGRAPH HEAD, COPIES IT AND USES      */
+ /*         IT AS A LITERAL FOR THE DISPLAY STMT CREATED FROM THE   */
+ /*         COPIED LINE. WHEN THERE ARE NO MORE PARAS, THE FIND X  */
+ /*         FAILS, THE MAXCC IS SET TO NON ZERO AND THE LOOP IS      */
+ /*         BROKEN.                                                  */
+ /*                                                                  */
+            DO         WHILE (&MAXCC = 0)       /*                   */
+ ISREDIT   (PARLIN) = LINE (CURLIN)             /* DUPLICATE THE PAR-*/
+ ISREDIT   LINE_AFTER (CURLIN) = (PARLIN)  /* AGRAPH HEADING.   */
+            SET      &CURLIN = &CURLIN + 1      /* MAKE ROOM FOR     */
+ ISREDIT   SHIFT )  &CURLIN  20                 /* MASK DATA.        */
+ /*                   MAKE A DISPLAY STMT OF THE REPEATED LINE    */
+ ISREDIT   LINE     (CURLIN) = LINE + <&DISPOSET (MASKD) 60 "'.">
+ ISREDIT   EXCLUDE  P'=' 1 FIRST                /* SET UP FOR NEXT   */
+ ISREDIT   EXCLUDE  P'=' 1 NEXT                 /* PARAGRAPH HEAD.   */
+ ISREDIT   FIND     P'=' 1 NX                   /*                   */
+ ISREDIT   (CURLIN) = LINENUM .ZCSR             /*                   */
+          END                                   /*                   */
+ ISREDIT RESET                                  /* RESET ALL EDIT CMD*/
+ ISREDIT SEEK       &PARAOSET ' PROC' FIRST     /* F PROCEDURE DIVSN */
+ ISREDIT MEND                                   /*                   */
+ EXIT     CODE (&LASTCC)                    /*                   */
+ MEMBER NAME  JC
+ /** REXX - INSERT SORT STEP JCL **/
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (PARM) NOPROCESS"
+
+    ADDRESS ISREDIT
+  REC = "/*JOBPARM S=ANY"
+    "LINE_AFTER 0 = (REC)"
+  REC = "/*ROUTE PRINT RMT163"
+    "LINE_AFTER 0 = (REC)"
+  REC = "//             REGION=8M,NOTIFY=TIRAJON"
+    "LINE_AFTER 0 = (REC)"
+ REC = "//TIRAJONE JOB (IT00,0000),'RAMA  JON-46569',CLASS=W,MSGCLASS=X,"
+    "LINE_AFTER 0 = (REC)"
+    RETURN(0)
+
+ MEMBER NAME  SUMCOL
+  /**  REXX -- SUMS SPECIFIED COLUMNS  **/
+   NUMERIC DIGITS 31
+   ADDRESS "ISREDIT";
+   "MACRO (PRM1 PRM2 PRM3 PRM4 PRM5 PRM6 PRM7 PRM8 PRM9 PRM10",
+          "PRM11 PRM12 PRM13 PRM14 PRM15 PRM16 PRM17 PRM18 PRM19",
+          "PRM20) NOPROCESS"
+  /*********************************************************************/
+  /*   SUMCOLS    COL-1  COL-2  (COL-N  COL-N  ...)                    */
+  /*              (LABEL-1 LABEL-2)                                    */
+  /*********************************************************************/
+  /*   COL-PAIRS (REQUIRED) INDICATE COLUMN OF NUMBERS TO BE TOTALLED  */
+  /*   LABEL RANGE OR CC RANGE MAY BE USED TO RESTRICT CALCULATIONS    */
+  /*********************************************************************/
+   TOK. = ""
+   IF PRM1 = '' THEN SIGNAL DISPDOC
+   LABELS = 0
+   PAIRS = 0
+   DO I = 1 TO 19;
+      X = VALUE("PRM"I)
+      IF SUBSTR(X,1,1) = '.' THEN DO
+         IF DATATYPE(SUBSTR(X,2),"A")  THEN DO
+           IF LABFROM = "LABFROM" THEN LABFROM = X
+           ELSE LABTO = X
+           LABELS = LABELS + 1
+         END
+         ELSE DO
+            ZEDSMSG = "INVALID LABEL(S)"
+            ZEDLMSG = "LABELS MUST BE ALPHABETIC AFTER PERIOD"
+            ADDRESS "ISPEXEC SETMSG MSG(ISRZ001)"
+            EXIT 4
+         END
+      END
+      ELSE DO
+        PAIRS = PAIRS + 1
+        TOK.I  = VALUE("PRM"I)
+      END
+   END
+   IF LABELS = 2 THEN DO
+      "(LNEBGN) = LINENUM " LABFROM
+      "(LNEEND) = LINENUM " LABTO
+   END
+   ELSE DO
+      "PROCESS RANGE C"
+      RCH = RC
+      IF RCH = 0 THEN DO
+       "(ZFRANGE) = LINENUM .ZFRANGE"
+       "(ZLRANGE) = LINENUM .ZLRANGE"
+       LABELS = 2
+      END
+      ELSE DO
+        IF RCH =  4  THEN DO
+          "(ZFRANGE) = LINENUM .ZFIRST"
+          "(ZLRANGE) = LINENUM .ZLAST"
+          /*ZFRANGE = 13; ZLRANGE  = 15 */
+          LABELS = 2
+        END
+        ELSE DO
+           "LINE_BEFORE .ZFIRST = NOTELINE ",
+            "'ISREDIT PROCESS C OR RANGE CC RETURN CODE IS" RCH"'"
+            RETURN 4
+        END
+      END
+      IF LABELS \= 2 THEN DO
+         IF LABELS \= 0 THEN DO
+          ZEDSMSG = 'LABEL PAIR'
+          ZEDLMSG = "EXACTLY TWO LABELS SHOULD COMPRISE A" ,
+             "LABEL RANGE, NOT" PAIRS
+          ADDRESS "ISPEXEC SETMSG MSG(ISRZ001)"
+          EXIT 4
+         END
+      END
+      LNEBGN = ZFRANGE
+      LNEEND = ZLRANGE
+   END
+   IF LNEEND < LNEBGN THEN DO
+      X = LNEBGN
+      LNEBGN = LNEEND
+      LNEEND = X
+   END
+   IF LNEBGN = 0 THEN LNEBGN = 1
+   DO J=1 TO 20; SUM.J=0;END; MAXJ=0;
+   DO I = LNEBGN TO LNEEND BY 1 /* WHILE TO5 \= "TO5" */
+      "(XLINE) = LINE " I
+      "(XSTATUS) = XSTATUS " I
+      IF XSTATUS = "NX" THEN DO
+         ROWTOT = 0
+         DO J = 1 TO 19 BY 2; JP1 = J+1
+            IF  DATATYPE(TOK.J,"N")         THEN
+             IF  DATATYPE(TOK.JP1,"N")         THEN DO
+               BB = TOK.JP1 - TOK.J + 1
+               ADDEND = SUBSTR(XLINE,TOK.J,BB)
+               IF  DATATYPE(ADDEND,"N")         THEN DO
+                 SUM.J = SUM.J + ADDEND
+                 ROWTOT = ROWTOT + ADDEND
+               END
+            END
+         END
+     END
+   END
+   SUMTOT = 0;
+  "(LASTLN) = LINENUM .ZLAST"
+  IF LASTLN \= LNEEND THEN LNEEND = LNEEND + 1
+   TALLIES = 1
+   DO J=1 TO 19 BY  2; JP1 = J + 1;
+      IF TOK.J /= '' THEN DO
+         TALLIES = TALLIES + 1
+         SUMTOT = SUMTOT + SUM.J
+         "LINE_BEFORE" LNEBGN "= NOTELINE """³³TIME('N') ,
+         "SUM OF COLS " TOK.J³³"-"³³TOK.JP1³³", TOTAL IS" SUM.J""""
+      END
+  END
+  "LINE_BEFORE" LNEBGN "= NOTELINE '"³³TIME('N'),
+         "--------------- TOTAL OF SUMS IS " SUMTOT "'"
+  "LOC " LNEBGN
+  "UP " TALLIES
+  RETURN(0)
+
+  DISPDOC:
+     SAY "SUMCOLS - ADD COLUMNS OF NUMBERS UNDER EDIT "
+     SAY
+     SAY " FORMAT "
+     SAY "    SUMCOLS  1ST-COL 2ND-COL  ...  .A .B "
+     SAY "       AT LEAST ONE SET OF COLUMNS IS MANDATORY. UP TO  "
+     SAY "       10 SETS MAY BE SUPPLIED.  EITHER A CC/CC RANGE   "
+     SAY "       MAY BE DELIMITED, LABELS MAY BE SUPPLIED, OR THE "
+     SAY "       WHOLE FILE WILL BE PROCESSED.  THE DATA MAY BE   "
+     SAY "       STAGGERED, HAVE DECIMAL PLACES, AND/OR BE SIGNED."
+     SAY
+     SAY " EXAMPLE "
+     SAY "            1---5---10----5---20---                 "
+     SAY "              1        -1.1                         "
+     SAY "              3            1.1                      "
+     SAY "              5          2.3                        "
+     SAY "    GIVEN THE ABOVE DATA, SUMCOLS  1 5  11 20       "
+     SAY "    WILL PRODUCE                                    "
+     SAY "       SUM OF NX COLS  1-5, TOTAL IS 9              "
+     SAY "       SUM OF NX COLS  11-20, TOTAL IS 2.3          "
+     SAY "       --------------- TOTAL OF SUMS IS  11.3       "
+     SAY
+     EXIT(1)
+ MEMBER NAME  PDS1
+  /* REXX */
+  /*                                       */
+  /* AUTHOR: RAMA MOHAN                    */
+  /* LAST UPDATED 02/10/2002               */
+  /*                                       */
+  /***************************************************************/
+  /*                                                             */
+  /* THIS REXX EXEC CAN BE USED TO PROCESS AN ISPF EDIT MACRO    */
+  /* AGAINST EVERY MEMBER OF A PDS.                              */
+  /*                                                             */
+  /***************************************************************/
+  /* COMMAND SYNTAX:                                             */
+  /*                                                             */
+  /*   TSO %EDMACALL  DATA_SET_NAME  MACRO_NAME                  */
+  /*                                                             */
+  /* IF DATA_SET_NAME IS NOT ENCLOSED IN QUOTES, THEN THE        */
+  /* TSO PREFIX (NORMALLY THE USERID) WILL BE ADDED TO THE       */
+  /* BEGINNING OF THE DATA SET NAME.                             */
+  /*                                                             */
+  /***************************************************************/
+  /* SAMPLE EDIT MACRO AND EDMACALL EXECUTION:                   */
+  /*                                                             */
+  /*  CHGSYS EDIT MACRO                                          */
+  /*                                                             */
+  /*  /* REXX   EDIT MACRO TO CHANGE "SYSA." TO "SYSB." */       */
+  /*  ADDRESS ISREDIT                                            */
+  /*  "MACRO"                                                    */
+  /*  "CHANGE 'SYSA.' 'SYSB.' ALL"                               */
+  /*  "SAVE"                                                     */
+  /*  "END"                                                      */
+  /*                                                             */
+  /*  EDMACALL EXECUTION                                         */
+  /*                                                             */
+  /*  TSO  PDS1 'TEST.PROCLIB' CHGSYS                            */
+  /*                                                             */
+  /***************************************************************/
+  ARG DSN MACNAME .
+  IF MACNAME = '' THEN DO               /* NO MACRO NAME PARM GIVEN    */
+    SAY  'ERROR - EDIT MACRO NAME NOT SPECIFIED' /* ISSUE ERROR MSG    */
+    EXIT 12                             /* EXIT RC=12                  */
+  END
+  IF POS("'",DSN) = 0 &  SYSVAR(SYSPREF) <> '' THEN , /* IF NO QUOTES  */
+    DSN = SYSVAR(SYSPREF) ³³ '.' ³³ DSN /* AND PREF NOT NULL, ADD IT   */
+  ELSE DSN = STRIP(TRANSLATE(DSN,"","'")) /* REMOVE QUOTES IF USED     */
+  CHKLIB = SYSDSN("'"DSN"'")            /* SEE IF DATA SET EXISTS      */
+  IF  CHKLIB <> 'OK' THEN DO            /* DATA SET NOT FOUND          */
+    SAY  'ERROR -' DSN 'NOT FOUND. CHECK NAME AND QUOTES.' /* ISSUE MSG*/
+    EXIT 12                             /* EXIT RC=12                  */
+  END
+  JUNK = OUTTRAP('MBR.')                /* CAPTURE OUTPUT TO MBR. STEM */
+  "LISTD '" ³³ DSN ³³ "' MEMBERS"       /* ISSUE LISTD CMD AGAINST PDS */
+  JUNK = OUTTRAP('OFF')                 /* STOP CAPTURING OUTPUT       */
+  DO I = 1 TO MBR.0                     /* LOOP TO GET PAST VOL INFO   */
+    IF MBR.I = "--MEMBERS--" THEN LEAVE /* IF MEMBER SECTION, EXIT LOOP*/
+  END
+  IF I = MBR.0 THEN DO                  /* NO MEMBERS IN PDS           */
+    SAY 'ERROR - NO MEMBERS FOUND IN' DSN'.' /* ISSUE ERROR MSG        */
+    EXIT 12                             /* EXIT RC=12                  */
+  END
+  SAY 'PROCESSING' MBR.0 - I 'MEMBERS ...'
+  DO J = I+1 TO MBR.0                   /* LOOP TO EXECUTE EDIT MACRO  */
+    PARSE VAR MBR.J MACMEM .            /* GET RID OF ALIAS INFO       */
+    ADDRESS ISPEXEC "EDIT DATASET('" ³³ DSN ³³ "(" ³³ MACMEM ³³ ")')" ,
+                    "MACRO("MACNAME")"
+  END
+  SAY 'PROCESSING COMPLETE!'
+  EXIT 0
+ MEMBER NAME  THISDSN
+  ISREDIT MACRO (LINE)
+  /**************************************************************
+  /**************************************************************
+  /* ESTABLISH WHAT LINE TO INSERT THE TEXT AFTER
+  /**************************************************************
+  IF &LINE =   THEN -
+     DO
+     ISREDIT (CURLN) = CURSOR
+     SET &CURLN = &EVAL(&CURLN)
+     END
+  ELSE -
+     SET &CURLN = &LINE
+  /**************************************************************
+  /* GET THE DATASET AND MEMBER NAMES
+  /**************************************************************
+  ISREDIT (DSNAME) = DATASET
+  ISREDIT (MEMBER) = MEMBER
+  /**************************************************************
+  /* INSERT THE TEXT LINE
+  /**************************************************************
+  IF &MEMBER =   THEN -
+     SET &LINE1  = &STR("1FROM &DSNAME &SYSDATE &SYSTIME")
+  ELSE -
+     SET &LINE1  = &STR("1FROM &DSNAME(&MEMBER) &SYSDATE &SYSTIME")
+  ISREDIT LINE_BEFORE &CURLN = &LINE1
+  EXIT
+ MEMBER NAME  CMPUTE
+  /*REXX */
+  PARSE ARG FORMULA
+  INTERPRET 'RESULT = ' FORMULA
+  IF SYSVAR('SYSISPF') = 'ACTIVE'
+     THEN DO
+          ZEDSMSG = RESULT
+          ZEDLMSG = FORMULA '==>' RESULT
+          'ISPEXEC SETMSG MSG(ISRZ001)'
+          END
+     ELSE SAY FORMULA '==>' RESULT
+ MEMBER NAME  REDISP
+  /* REXX ----------------------------------------------------------
+     SYNOPSIS : REWORK JCL DISPS TO BE BETTER
+     LIBRARY  : NWH.GENERAL.EXEC(REDISP)
+     VERSION  : 1.0
+     CREATED  : 23 JUL 1998 10:09AM NWH
+     NOTES    :
+  ------------------------------------------------------------------ */
+  ADDRESS ISREDIT
+  "MACRO"
+  "EXCLUDE ALL"
+  "FIND ',DISP=SHR' ALL"
+  "CHANGE ',DISP=SHR' '' ALL NX"
+  "CHANGE 'DSN=' 'DISP=SHR,DSN=' ALL NX"
+  "RESET"
+  EXIT
+ MEMBER NAME  PDS3
+  ISREDIT MACRO
+  ISREDIT CHANGE ALL 'CCM54' 'CCM55'
+  EXIT
+ MEMBER NAME  QCARD1
+ /* REXX */
+ ARG MEM
+ ISPEXEC CONTROL ERRORS RETURN
+ DSN = 'TIRAJON.COB'
+ IF MEM = '' THEN MEM = '*'
+  IF MEM = '*' THEN
+       "ISPEXEC VIEW DATASET('"DSN"')"
+  ELSE
+       "ISPEXEC VIEW DATASET('"DSN"("MEM")')"
+
+ MEMBER NAME  IGDG
+ /** REXX - INSERT SORT STEP JCL **/
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (PARM) NOPROCESS"
+
+    ADDRESS ISREDIT
+    "(LINE,COL) = CURSOR"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "         SCRATCH)"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "         LIMIT(10) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "        (NAME(TIRAJON.C069.DELTA.XXXXXX.XXXXX) -"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "  DEFINE GDG - "
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSIN     DD *"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSPRINT  DD SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//STEP1100 EXEC PGM=IDCAMS"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//***"
+    "LINE_AFTER (LINE) = (REC)"
+    "LOCATE" LINE
+    LINE_X  = LINE + 3
+    COL_X   = 38
+    "CURSOR =" LINE_X COL_X
+    RETURN(0)
+
+ MEMBER NAME  FINDDUPS
+  /**  REXX -- SORT & SHOW ALL RECORDS THAT ARE DUPS WITHIN A FILE  **/
+
+     SUBCOM ISREDIT
+     IF  RC = 0  THEN DO
+        ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+        ADDRESS ISREDIT "ISREDIT MACRO (PARMS)"
+        IF  RC = 0  THEN DO
+           ADDRESS ISREDIT "ISREDIT ("DSN") = DATASET"
+        END
+     END
+     IF  DSN = 'DSN'  THEN DO
+        SAY 'FINDDUPS MACRO CAN ONLY BE RUN UNDER ISPF EDIT!'
+        SIGNAL EOJ
+     END
+
+     PARMS   = TRANSLATE(PARMS)
+     PARMCNT = 0
+     COL.    = ""
+     LBL1 = ""
+     LBL2 = ""
+     DO II = 1 TO 12
+        TOKEN = WORD(PARMS,II)
+        IF TOKEN = "" THEN LEAVE
+        IF SUBSTR(TOKEN,1,1) = "." THEN DO
+           IF LBL1 = "" THEN LBL1 = TOKEN
+           ELSE IF LBL2 = "" THEN LBL2 = TOKEN
+              ELSE DO
+                 ZEDSMSG = ".LABEL RC=8"
+                 ZEDLMSG = "TOO MANY LABELS --" LBL1 LBL2 TOKEN
+                 ADDRESS "ISPEXEC" "SETMSG MSG(ISRZ000)"
+                 EXIT 8
+              END
+        END
+        ELSE DO
+           PARMCNT = PARMCNT + 1
+           COL.PARMCNT = TOKEN
+        END
+     END II
+     IF LBL1 <> ""  &  LBL2 = ""  THEN LBL2 = LBL1
+     IF (PARMCNT // 2) <> 0 THEN DO
+        SAVER = COL.PARMCNT
+        PARMCNT = PARMCNT + 1
+        COL.PARMCNT = SAVER
+     END
+
+     ERRORMSG = ''
+     MESG = ''
+     IF  PARMCNT = 0 THEN DO
+        MESG = 'PARAMETERS ARE MISSING!'
+        SIGNAL ERROR
+     END
+     "ISREDIT ("LRECL") = LRECL "
+     SORTPARMS = ""
+     DO II = 1 TO PARMCNT
+        IF  ªDATATYPE(COL.II,'W') ³ COL.II = 0 THEN DO
+           MESG = "'"COL.II"' COLUMN VALUE IS INVALID!"
+           SIGNAL ERROR
+        END
+        IF  COL.II > LRECL  THEN DO
+           MESG = "'"COL.II"' IS GREATER THAN RECORD SIZE("LRECL")"
+           SIGNAL ERROR
+        END
+        SORTPARMS = SORTPARMS ³³ " " ³³ COL.II
+     END II
+     DO II = 1 TO PARMCNT BY 2
+        JJ = II + 1
+        IF  COL.II > COL.JJ THEN DO
+           MESG = "LEFT-COL "COL.II" IS GREATER THAN RIGHT-COL "COL.JJ
+           SIGNAL ERROR
+        END
+     END II
+
+     IF  LBL1 <> ''  THEN DO
+        "ISREDIT L &LBL1"
+         IF  RC <>  0 THEN DO
+            MESG = "LABEL" LBL1 "NOT FOUND"
+            SIGNAL ERROR
+         END
+     END
+
+     IF  LBL2 <> ''  THEN DO
+        "ISREDIT L &LBL2"
+         IF  RC <>  0 THEN DO
+            MESG = "LABEL" LBL2 "NOT FOUND"
+            SIGNAL ERROR
+         END
+     END
+
+     IF  LBL1 <> ''  THEN  "ISREDIT (START) = LINENUM &LBL1"
+                     ELSE  START = 1
+     IF  LBL2 <> ''  THEN  "ISREDIT (END) = LINENUM &LBL2"
+                     ELSE  "ISREDIT (END) = LINENUM .ZLAST"
+
+     "ISREDIT ("ANUM") = AUTONUM"
+     "ISREDIT NUMBER OFF "
+
+     "ISREDIT SORT " SORTPARMS LBL1 LBL2
+
+     "ISREDIT (RECORD)  = LINE " START
+     PREVKEY = SUBSTR(RECORD,COL.1,COL.2-COL.1+1)
+     DO II = 3 TO PARMCNT BY 2
+        JJ = II + 1
+        PREVKEY = PREVKEY ³³ SUBSTR(RECORD,COL.II,COL.JJ-COL.II+1)
+     END II
+     "ISREDIT RESET"
+     "ISREDIT LABEL "START" = .TMP"
+     LASTEQ = "NO"
+     SET    = 0
+
+     DO  PNTR  =  (START+1) TO END  BY 1
+        "ISREDIT (RECORD) = LINE" PNTR
+        NEXTKEY = SUBSTR(RECORD,COL.1,COL.2-COL.1+1)
+        DO II = 3 TO PARMCNT BY 2
+           JJ      = II + 1
+           NEXTKEY = NEXTKEY ³³ SUBSTR(RECORD,COL.II,COL.JJ-COL.II+1)
+        END II
+        IF PREVKEY == NEXTKEY THEN DO
+           IF LASTEQ = "NO" THEN DO
+              SET    = SET + 1
+              LASTEQ = "YES"
+           END
+        END
+        ELSE DO
+           IF LASTEQ = "NO" THEN "ISREDIT X ALL .TMP .TMP"
+           ELSE LASTEQ = "NO"
+           "ISREDIT LABEL "PNTR" = .TMP"
+           IF  PNTR = END  THEN "ISREDIT X ALL .TMP .TMP"
+           PREVKEY = NEXTKEY
+        END
+     END PNTR
+
+     CALL SETMSG '* NO ' SET 'DUP KEY SETS $SETS OF DUPLICATE KEYS FOUND'
+     IF START = 1 THEN "ISREDIT LOCATE" 0
+                  ELSE DO
+                     START = START - 1
+                     "ISREDIT LOCATE" START
+                  END
+     "ISREDIT AUTONUM = "ANUM
+      SIGNAL EOJ
+
+  ERROR:
+     IF MESG <> '' THEN DO
+        ERRORMSG = '===>' MESG
+     END
+     SIGNAL DISPDOC
+
+  SETMSG:
+     PARSE ARG ZERRHM ZERRALRM ZERRSM'$'ZERRLM
+     ADDRESS ISPEXEC 'SETMSG MSG(ISRZ002) COND'
+     RETURN
+
+  EOJ:
+     RETURN
+
+  DISPDOC:
+     SAY "FINDDUPS - SORT AND SHOW ANY DUPS WITHIN A FILE"
+     SAY
+     SAY ERRORMSG
+     SAY
+     SAY " FORMAT "
+     SAY
+     SAY "    FINDDUPS  COL1 COL2  ...  .LABEL1 .LABEL2"
+     SAY
+     SAY "    ONE PAIR OF COLUMNS IS MANDATORY. UP TO 10 PAIRS "
+     SAY "    MAY BE SPECIFIED. "
+     SAY
+     SAY " EXAMPLE "
+     SAY
+     SAY "    FINDDUPS  17 19  4 11 "
+     SAY
+     SAY "       WILL SORT FILE BY COLUMNS 17 THRU 19 AND 4 "
+     SAY "       THRU 11 SHOWING (UNEXCLUDING) ONLY THOSE "
+     SAY "       RECORDS WITH DUPLICATE KEYS."
+     SAY
+     RETURN
+
+ MEMBER NAME  QJLIB
+ /* REXX */
+ NODE1:
+     ARG MEMBER .
+     ADDRESS ISPEXEC
+
+     LEN = LENGTH(MEMBER)
+
+     USER = USERID()
+
+     IF MEMBER = . ,
+     ³  LEN    = 0 THEN
+         "ISPEXEC VIEW DATASET('BISG.BATCH.QA.JCLLIB')"
+     ELSE
+         IF LEN < 8 THEN
+             "ISPEXEC VIEW DATASET('BISG.BATCH.QA.JCLLIB(&MEMBER*)')"
+         ELSE
+             "ISPEXEC VIEW DATASET('BISG.BATCH.QA.JCLLIB(&MEMBER)')"
+ MEMBER NAME  QFILE
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /*                                                                    */
+ /*                 THIS CLIST IS CREATED BY TONY GAW                  */
+ /*                                                                    */
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+
+ PROC 1 DATASET
+     GLOBAL VARIABLE1
+  /* CONTROL MSG      */
+  /* CONTROL LIST     */
+  /* CONTROL CONLIST  */
+  /* CONTROL SYMLIST  */
+     CONTROL END(ENDX)
+     SET VARIABLE1 = &STR(&DATASET)
+
+     CLRSCRN
+     WRITE SELECT ACTION ON DATASET '&DATASET'
+     WRITE      'E'  TO EDIT
+     WRITE      'B'  TO BROWSE
+     WRITE      'V'  TO VIEW
+     WRITE      'D'  TO DELETE
+     WRITE      'R'  TO RENAME
+     WRITE      'P'  TO PRINT
+     WRITE      'K'  TO COPY FILE ONLY - NO ALLOCATION PERFORMED
+     WRITE      'A'  TO ALLOCATE LIKE ANOTHER DATASET
+     WRITE      'DA' TO ALLOCATE ACCORDING TO ATTRIBUTES SPECIFIED
+     WRITE      'VS' TO CREATE VSAM LIKE ANOTHER VSAM
+     WRITE      'F'  TO FREE
+     WRITE      'Y'  TO VERIFY
+     WRITE      'I'  TO LIST DATASET INFORMATION
+     WRITE      'GI' TO LIST   GDG  INFORMATION
+     WRITE      'GC  TO CREATE GDG
+     WRITE      'GD' TO DELETE GDG
+     WRITE      'GA' TO ALTER  GDG LIMIT
+     WRITE      'X'  TO SUB A JOB
+     WRITE      'S'  TO DO A SUMMARY  LISTC
+     WRITE      'L'  TO DO A DETAILED LISTC
+     WRITE      'Z'  TO DO A ISPF DSLIST
+     WRITE
+     WRITENR ENTER OPTION:
+     READ ACTION
+
+     IF &ACTION = E  +
+     OR &ACTION = D  +
+     OR &ACTION = R  +
+     OR &ACTION = DG +
+     OR &ACTION = F  +
+     OR &ACTION = Y  THEN +
+         SYSCALL PEXIST DATASET
+
+     /* LISTDSI '&DATASET' RECALL */
+     SET &RETURNCC = &LASTCC
+     SELECT
+         WHEN (&ACTION = A) +
+             SYSCALL PALLOC DATASET
+         WHEN (&ACTION = B) +
+             IF &RETURNCC = 0 THEN +
+                 ISPEXEC BROWSE DATASET('&DATASET')
+             ELSE +
+                 DO
+                     WRITE '&DATASET' IS MIGRATED OR DOES NOT EXIST
+                     WRITE
+                     LISTC ENT('&DATASET') VOLUME
+                 ENDX
+         WHEN (&ACTION = D) +
+             IF &RETURNCC = 0  THEN +
+                 DO
+                     WRITENR DELETE DATASET '&DATASET' (Y/N)?
+                     READ &YESNO
+                     IF &YESNO = Y THEN +
+                         DELETE '&DATASET'
+                     ELSE +
+                         WRITE DELETE COMMAND CANCELLED - &DATASET IS NOT DELETED
+                 ENDX
+             ELSE +
+                 DO
+                     WRITE '&DATASET' IS MIGRATED OR DOES NOT EXIST
+                     WRITE
+                     LISTC ENT('&DATASET') VOLUME
+                 ENDX
+         WHEN (&ACTION = DA) +
+             SYSCALL DALLOC DATASET
+         WHEN (&ACTION = E) +
+             IF &RETURNCC = 0 THEN +
+                 ISPEXEC EDIT DATASET('&DATASET')
+             ELSE +
+                 DO
+                     WRITE '&DATASET' IS MIGRATED OR DOES NOT EXIST
+                     WRITE
+                     LISTC ENT('&DATASET') VOLUME
+                 ENDX
+         WHEN (&ACTION = F) +
+             %FREEFILE
+         WHEN (&ACTION = GI) +
+             DO
+                /* LISTC LVL('&DATASET') */
+                 %GDATE '&DATASET'
+             ENDX
+         WHEN (&ACTION = GC) +
+             DO
+                 WRITENR ENTER NUMBER OF GENERATIONS:
+                 READ LMT
+                 DEFINE GDG (NAME('&DATASET') LIMIT(&LMT) SCRATCH)
+                 /* LISTC ENT('&DATASET') ALL */
+                 %GDATE '&DATASET'
+             ENDX
+         WHEN (&ACTION = GD) +
+             DO
+                 WRITENR DELETE '&DATASET' GDGS (Y/N)?
+                 READ &YESNO
+                 IF &YESNO = Y THEN +
+                     DELETE '&DATASET' GDG FORCE
+                 ELSE +
+                     WRITE DELETE COMMAND CANCELLED - &DATASET IS NOT DELETED
+             ENDX
+         WHEN (&ACTION = GA) +
+             DO
+                 WRITENR ENTER NUMBER OF GENERATIONS:
+                 READ LMT
+                 ALTER '&DATASET' LIMIT(&LMT)
+                 %GDATE '&DATASET'
+             ENDX
+         WHEN (&ACTION = K) +
+             SYSCALL PCOPY DATASET
+         WHEN (&ACTION = X) +
+             SYSCALL PSUB DATASET
+         WHEN (&ACTION = I) +
+             DO
+                 CLRSCRN
+                 %DSNINFO1
+             ENDX
+          /* LISTDS ('&DATASET') */
+         WHEN (&ACTION = L) +
+             LISTC ENT('&DATASET') ALL
+         WHEN (&ACTION = P) +
+             %GENER &DATASET
+         WHEN (&ACTION = R) +
+             IF &RETURNCC = 0 THEN +
+                 %RNAME
+             ELSE +
+                 DO
+                     WRITE '&DATASET' IS MIGRATED OR DOES NOT EXIST
+                     WRITE
+                     LISTC ENT('&DATASET') VOLUME
+                 ENDX
+         WHEN (&ACTION = S) +
+             LISTC ENT('&DATASET') VOLUME
+         WHEN (&ACTION = V) +
+             ISPEXEC VIEW DATASET('&DATASET')
+         WHEN (&ACTION = VS) +
+             %VSAMCRT &DATASET
+         WHEN (&ACTION = Y) +
+             VERIFY DATASET ('&DATASET')
+         WHEN (&ACTION = Z) +
+             ISPEXEC SELECT PGM(ISRDSLST)  +
+                      PARM(DSL '&DATASET') SUSPEND SCRNAME(DSLIST)
+     ENDX
+ END
+
+ /*--------------------------------------------------------------------*/
+ DALLOC: PROC 1 DATASET
+     SYSREF &DATASET
+
+     CLRSCRN
+     READ &ACTION
+
+     WRITENR TRACKS/CYLINDERS (CY, TR / DEFAULT = CYL)?
+     READ &CYL
+     WRITENR SPACES (FORMAT PRIMARY SECONDARY)?
+     READ &SPC1 &SPC2
+     WRITENR FORMAT (F, FA, V, VA / DEFAULT = F)?
+     READ &FMT
+     WRITENR LRECL (DEFAULT = 80)?
+     READ &LEN
+
+     IF &CYL =  THEN SET &CYL = CY
+  /* IF &FMT =  THEN SET &FMT = F */
+     SELECT
+       WHEN (&FMT =  )   +
+            SET &FMT = F
+       WHEN (&FMT = FA ) +
+            DO
+                SET FMT = F
+                SET A   = &STR(,A)
+            ENDX
+       WHEN (&FMT = VA ) +
+            DO
+                SET FMT = V
+                SET A   = &STR(,A)
+            ENDX
+     ENDX
+
+     IF &LEN =  THEN SET &LEN = 80
+
+     ALLOC DA('&DATASET')                 +
+         NEW CATALOG RELEASE              +
+         UNIT(TEST) &CYL SP(&SPC1,&SPC2)  +
+         RECFM(&FMT,B&A) LRECL(&LEN) BLK(0)
+
+     IF &LASTCC = 0  THEN +
+         DO
+             WRITE
+             WRITE &DATASET ALLOCATION SUCCESSFUL
+             FREE DATASET('&DATASET')
+         ENDX
+ ENDX
+
+ /*--------------------------------------------------------------------*/
+ PALLOC: PROC 1 DATASET
+     SYSREF &DATASET
+
+     CLRSCRN
+     READ &ACTION
+
+     WRITE ALLOCATE DATASET '&DATASET'
+     WRITENR             LIKE
+     READ &INPUT
+
+     ALLOCATE DSNAME ('&DATASET') LIKE ('&INPUT') UNIT(TEST)
+     FREE DATASET('&DATASET')
+     WRITE '&DATASET' ALLOCATED LIKE '&INPUT'
+     WRITE
+
+     WRITENR COPY '&INPUT' TO '&DATASET' (Y/N DEFAULT = N)?
+     READ &RESP
+
+     IF &RESP = Y THEN +
+         SYSCALL JSUB DATASET INPUT
+ ENDX
+
+ /*--------------------------------------------------------------------*/
+ PCOPY: PROC 1 DATASET
+     SYSREF &DATASET
+
+     CLRSCRN
+     READ &ACTION
+
+     WRITE COPY DATASET '&DATASET'
+     WRITENR         FROM
+     READ &INPUT
+
+     SYSCALL JSUB DATASET INPUT
+
+ ENDX
+
+ /*--------------------------------------------------------------------*/
+ JSUB: PROC 2 DATASET INPUT
+     SYSREF &DATASET &INPUT
+
+     WRITENR SKIP RECORDS (DEFAULT = 0)?
+     READ &SKIPNUM
+
+     WRITENR COUNT RECORDS (DEFAULT = ALL)?
+     READ &COUNTNUM
+
+     WRITENR VSAM OPTION ONLY REUSE / REPLACE (DEFAULT = NONE)?
+     READ &OPT
+
+     WRITE
+
+     IF &SKIPNUM   =  THEN SET &SKIPNUM = 0
+     IF &COUNTNUM ª=  THEN SET COUNTNUM = COUNT(&COUNTNUM)
+
+     SET &USERID = &SYSUID
+
+     SET JOBID = R
+
+     ISPEXEC FTOPEN TEMP
+     IF &LASTCC ª= 0 THEN +
+        DO
+            WRITE
+            WRITENR FTOPEN FAILED
+            EXIT
+        ENDX
+
+     ISPEXEC FTINCL JDCAM
+     IF &LASTCC ª= 0 THEN +
+        DO
+            WRITE
+            WRITENR FTINCL FAILED
+            EXIT
+        ENDX
+
+     ISPEXEC FTCLOSE
+     IF &LASTCC ª= 0 THEN +
+        DO
+            WRITE
+            WRITENR FTCLOSE FAILED
+            EXIT
+        ENDX
+
+     ISPEXEC VGET (ZTEMPF)
+
+     CONTROL MSG
+
+     WRITENR EDIT JCL BEFORE SUBMITTING JOB (DEFAULT=Y)?
+     READ &RESP
+
+     IF &RESP = Y      +
+     OR &RESP =   THEN +
+         ISPEXEC EDIT DATASET('&ZTEMPF')
+     ELSE         +
+         DO
+             SUBMIT '&ZTEMPF'
+             WRITE
+             WRITENR JOB IS SUBMITTED TO PROCESS YOUR REQUEST...
+         ENDX
+     CONTROL NOMSG
+ ENDX
+
+ PSUB: PROC 1 DATASET
+     SYSREF &DATASET
+     WRITENR SUBMIT '&DATASET' (Y/N)?
+     READ ACTION
+
+     IF &ACTION = Y THEN +
+         SUB '&DATASET'
+ ENDX
+
+ PEXIST: PROC 1 DATASET
+     SYSREF &DATASET
+     SET &SYSDVAL  = &NRSTR(&DATASET)
+     READDVAL &V1
+
+     SET STAT      = &STR(&SYSDSN('&V1'))
+     IF &STR(&STAT)  ª= OK THEN +
+        DO
+            CLRSCRN
+            WRITE
+            WRITE  =========== !!! ERROR !!! =============
+            WRITE    '&V1'  &STR(&STAT)
+            WRITE  =======================================
+            EXIT CODE(0)
+        ENDX
+ ENDX
+ MEMBER NAME  QSUB
+ /* REXX */
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /*                                                                    */
+ /*                 THIS REXX IS CREATED BY TONY GAW                   */
+ /*                                                                    */
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+
+ ADDRESS ISREDIT
+     'MACRO ( OP )'
+
+     IF OP = '' THEN
+         DO
+             SAY 'ENTER MEMBER TO SUBMIT'
+             EXIT
+         END
+
+
+     SAY "SUBMIT 'TITOGAW.TG.TJCL("OP")'"
+     SAY "   AND 'TITOGAW.TG.PJCL("OP")' (Y/N)?"
+     PULL ACTION
+
+     IF ACTION = Y THEN
+         DO
+             ADDRESS TSO "SUB 'TITOGAW.TG.TJCL("OP")'"
+             ADDRESS TSO "SUB 'TITOGAW.TG.PJCL("OP")'"
+         END
+
+ MEMBER NAME  CHKDUP
+ PROC 0
+     CONTROL END(ENDX)
+
+     /*!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+     /*!                                                         !*/
+     /*! THIS CLIST PROGRAM DOES NOT HANDLE LARGE VOLUME OF DATA !*/
+     /*!                                                         !*/
+     /*!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+     /*-----------------------------------------------------------*/
+     /* IMPORTANT: SET WORK FILES HERE                            */
+     /*-----------------------------------------------------------*/
+     SET &INFILE  = 'USZ999.SORTED.LLID'
+  /* SET &INFILE  = 'URP999.NEER93Q2.FD05215.G0002V00'
+     SET &OUTFILE = 'USZ005.DUP.RECORDS'
+
+     /*-----------------------------------------------------------*/
+     /* IMPORTANT: SET KEY START AND END POSITION HERE            */
+     /*-----------------------------------------------------------*/
+     SET &COLBGN = 14
+     SET &COLEND = 21
+
+     /*-----------------------------------------------------------*/
+     /* ALLOCATE INPUT / OUTPUT FILE                              */
+     /*-----------------------------------------------------------*/
+     ALLOC F(INDD)  DA(&INFILE)                                   +
+         REUSE SHR
+
+     DELETE &OUTFILE
+     ALLOC F(OUTDD) DA(&OUTFILE)                                  +
+         NEW                                                      +
+         RECFM(F B) LRECL(80) BLOCK(800)                          +
+         SPACE(50,5) TRACKS UNIT(TEST) CATALOG
+
+     /*-----------------------------------------------------------*/
+     /* THIS ROUTINE CAPTURES ERRORS THAT OCCURR DURING EXECUTION */
+     /*-----------------------------------------------------------*/
+     ERROR DO
+         IF &LASTCC = 400 THEN DO
+             IF &DUPFND = 1 THEN +
+                 WRITE DUPLICATE KEYS FOUND, CHECK OUTPUT &OUTFILE
+             ELSE +
+                 WRITE NO DUPLICATE KEYS FOUND
+             CLOSFILE INDD
+             CLOSFILE OUTDD
+             FREE F(INDD OUTDD)
+             END
+         ENDX
+     ENDX
+
+     /*------------*/
+     /* OPEN FILES */
+     /*------------*/
+     OPENFILE INDD  INPUT
+     OPENFILE OUTDD OUTPUT
+
+     SET &BYPASS  = 0
+     SET &DUPFND  = 0
+     SET &RECCTR  = 0
+     SET &PREVKEY =
+     DO WHILE 1   = 1
+         GETFILE INDD
+
+         SET &RECCTR = &RECCTR + 1
+
+         SET &CURKEY = &SUBSTR(&COLBGN:&COLEND,&INDD)
+
+         IF &CURKEY < &PREVKEY THEN  +
+             DO
+                 SET &OUTDD = ERROR: RECORD NUMBER &RECCTR &STR(-) +
+                              KEY '&CURKEY' IS OUT OF SEQUENCE
+                 PUTFILE OUTDD
+                 WRITE &OUTDD
+
+                 SET &OUTDD = &STR(      ) PROGRAM IS ABORTED !!!
+                 PUTFILE OUTDD
+                 WRITE &OUTDD
+
+                 CLOSFILE INDD
+                 CLOSFILE OUTDD
+                 FREE F(INDD OUTDD)
+                 END
+             ENDX
+
+         IF &CURKEY ª= &PREVKEY THEN +
+             DO
+                 SET &BYPASS  = 0
+                 SET &PREVKEY = &CURKEY
+             ENDX
+         ELSE +
+             IF &BYPASS = 0 THEN +
+                 DO
+                     SET &DUPFND = 1
+                     SET &BYPASS = 1
+                     SET &OUTDD = &CURKEY
+                     PUTFILE OUTDD
+                 ENDX
+     ENDX
+ END
+ MEMBER NAME  CLIB
+ /* REXX */
+ NODE1:
+     ARG MEMBER .
+     ADDRESS ISPEXEC
+     LEN = LENGTH(MEMBER)
+     USER = USERID()
+     'CONTROL ERRORS RETURN'
+     IF MEMBER = . ,
+     ³  LEN    = 0 THEN
+         DO
+             "VIEW DATASET('BISG.CARDLIB')"
+             IF RC \= 0 THEN
+                 SAY 'ERROR: ' ZERRLM
+         END
+     ELSE
+         IF LEN < 8 THEN
+             DO
+                 "VIEW DATASET('BISG.CARDLIB(&MEMBER*)')"
+                 IF RC \= 0 THEN
+                     SAY 'ERROR: ' ZERRLM
+             END
+         ELSE
+             DO
+                 "VIEW DATASET('BISG.CARDLIB(&MEMBER)')"
+                 IF RC \= 0 THEN
+                     SAY 'ERROR: ' ZERRLM
+             END
+ MEMBER NAME  CRTGDG
+ PROC 2 GDGNAME LMT
+  /* CONTROL MSG      */
+  /* CONTROL LIST */
+  /* CONTROL CONLIST  */
+  /* CONTROL SYMLIST  */
+     DEFINE GDG (NAME('&GDGNAME') LIMIT(&LMT) SCRATCH)
+ END
+ MEMBER NAME  C2JCL
+ /* REXX */
+ ADDRESS ISREDIT
+     MACRO
+     "ISREDIT EXCLUDE ALL 1 2 '&&'"
+     "ISREDIT EXCLUDE ALL 1 1 '.'"
+     "ISREDIT EXCLUDE ALL 1 2 '  '"
+     "ISREDIT EXCLUDE ALL 1 2 'JC'"
+     "ISREDIT DELETE  ALL X"
+     "ISREDIT CHANGE  ALL .ZF .ZL 1 2 P'==' '//'"
+ MEMBER NAME  FSQL
+ /**********************************************************************/
+ /* EDIT MACRO COMMAND ARE EXECUTED BY TYPE THE MEMBER NAME ONLY.  IT  */
+ /* DOES NOT REQUIRE TO TYPE TSO EDITMACRO-NAME TO EXECUTE             */
+ /**********************************************************************/
+
+ ISREDIT MACRO (DEBUG)
+     IF &DEBUG EQ DEBUG THEN CONTROL LIST CONLIST SYMLIST MSG END(ENDX)
+     ELSE CONTROL MSG END(ENDX)
+
+     DO WHILE &LASTCC = 0
+         ISREDIT FIND NX 'EXEC SQL'
+         IF &LASTCC = 0 THEN +
+             ISREDIT LABEL .ZCSR  = .A  0
+         ELSE +
+             GOTO NODE_1
+
+         ISREDIT FIND NX 'END-EXEC'
+         IF &LASTCC = 0 THEN +
+             DO
+                 ISREDIT (LNUM) = LINENUM .ZCSR
+                 ISREDIT LINE_AFTER &LNUM = ' '
+                 SET &LNUM = &LNUM + 1
+                 ISREDIT LABEL &LNUM  = .B  0
+             ENDX
+         ELSE +
+             GOTO NODE_1
+
+         IF &LASTCC = 0      +
+         OR &LASTCC = 8 THEN +
+             ISREDIT EXCLUDE ALL .A .B
+     ENDX
+
+ NODE_1: +
+     ISREDIT FLIP
+     ISREDIT UP M
+     EXIT CODE(1)
+ MEMBER NAME  MLIB
+ /* REXX */
+ NODE1:
+     dname = 'titogaw.LIB'
+     "ISPEXEC SELECT PGM(ISRDSLST)
+              PARM(DSL '&dname') SUSPEND SCRNAME(DSLIST)"
+ MEMBER NAME  $COPYGET
+ //TIRAJONS JOB (IT00,0000),'RAMA  JON-46569',CLASS=W,MSGCLASS=X,
+ //             REGION=8M,NOTIFY=TIRAJON
+ /*ROUTE PRINT RMT163
+ /*JOBPARM S=ANY
+ //COPYGET  EXEC PGM=IKJEFT01
+ //COPYLIBS DD *
+ BISG.COPYLIB
+ /*
+ //INFILE0  DD DSN=BISG.SRCLIB(CCM55),DISP=SHR
+ //OUTFILE  DD SYSOUT=*
+ //SYSPRINT DD SYSOUT=*
+ //SYSTSPRT DD SYSOUT=*
+ //SYSIN    DD DUMMY
+ //SYSTSIN  DD *
+ PROFILE NOPREFIX
+ EXEC 'TIRAJON.CLIST(COPYGET)'  'SUPPRESS=YES'
+ /*
+ //*
+ MEMBER NAME  COPYGET
+ /* REXX TSO BATCH =================================================*/
+ /*                                                                 */
+ /*  COPYGET - Expands COBOL copies into an output file.            */
+ /*  Copies can be nested. The following DDnames must be allocated: */
+ /*    INFILE0 - Primary COBOL input file.                          */
+ /*    OUTFILE - Output file with expanded copies.                  */
+ /*    COPYLIBS- File containing a list of PDS where copies reside. */
+ /*                                                                 */
+ /*  The optional argument 'SUPPRESS=YES' means that copies         */
+ /*  with the SUPPRESS keywork are not expanded to the output file. */
+ /*  Return codes: 0 - All OK.  4 - One or more copies not found.   */
+ /*=================================================================*/
+
+ arg option .
+ if  option = "SUPPRESS=YES" then suppress = 1
+                             else suppress = 0
+ do x = 1 to 100
+    execio 1 diskr copylibs
+    if rc <>0 then leave x
+    pull lib.x  .
+ end
+ lib.0 = x-1
+
+ k = 0
+ step_retcod = 0
+ inf = infile0
+ do alpha = 0
+    execio 1 diskr inf
+    if rc <> 0 then do
+       if k = 0 then leave alpha
+       call deallocate
+       iterate alpha
+    end
+    parse pull linha
+    linha7 = substr(linha,7)
+    if word(linha7,1)= "COPY" then do
+       if suppress=1 & left(word(linha7,3),8)="SUPPRESS" then do
+          say ">>>  Copy Suppressed: " word(linha7,2)
+       end
+       else do
+          call allocate
+          if result = 0 then linha = overlay("*",linha,7)
+       end
+    end
+    queue linha
+    execio 1 diskw outfile
+ end
+ exit step_retcod
+
+ /*=================================================================*/
+
+ allocate:
+  retcod = 0
+  membro = strip(word(linha7,2),,".")
+  k = k+1
+  inf = infile³³k
+  do j = 1 to lib.0
+     nome = lib.j"("membro")"
+     if sysdsn(nome) = "OK" then do
+        "alloc da('"nome"') dd("inf") shr"
+        leave j
+     end
+  end
+  if j > lib.0 then do
+     say "==== COPY NOT FOUND:  " membro
+     k = k-1
+     inf = infile³³k
+     retcod = 4
+     step_retcod = 4
+  end
+  else do
+     say ">>>  Copy expanded from " nome
+  end
+ return retcod
+
+ deallocate:
+  "execio 0 diskr" inf "(finis"
+  "free dd("inf")"
+  k = k-1
+  inf = infile³³k
+ return
+ MEMBER NAME  J2G
+ /* REXX J2G */
+ /* Parse the passed date */
+ /* TSO J2G 2000001 Y     */
+ PARSE ARG julian_date show
+ year = LEFT(julian_date,4)
+ days = RIGHT(julian_date,3)
+ /* Calculate the Gregorian date */
+ FEB = 28 + (year // 4 = 0) - (year // 100 = 0) + (year // 400 = 0)
+ months = "31" FEB "31 30 31 30 31 31 30 31 30 31"
+ DO count = 1 WHILE days > word(months,count)
+    days = days - word(months,count)
+ END
+ /* Return or display the date */
+ IF show = "" THEN
+   RETURN RIGHT(days,2,0)"/"RIGHT(count,2,0)"/"year
+ ELSE
+   DO
+     SAY "   Julian date: '"julian_date"'"
+     SAY "Gregorian date: '"RIGHT(days,2,0)"/"RIGHT(count,2,0)"/"year"'"
+   END
+ MEMBER NAME  G2J
+ /* REXX G2J */
+ /* Parse the passed date */
+ /* TSO G2J 31/12/2003 Y  */
+ ARG greg_date show
+ PARSE VAR greg_date day "/" month "/" year
+ /* Calculate the Julian date */
+ FEB = 28 + (year // 4 = 0) - (year // 100 = 0) + (year // 400 = 0)
+ months = "31" FEB "31 30 31 30 31 31 30 31 30 31"
+ days = day
+ DO count = 1 while count < ABS(SUBSTR(greg_date,4,2))
+    days = days + word(months,count)
+ END
+ /* Return or display the date */
+ IF show = "" THEN
+   RETURN year""right(days,3,'0')
+ ELSE
+   DO
+     SAY "Gregorian date: '"greg_date"'"
+     SAY "   Julian date: '"year""right(days,3,'0')"'"
+   END
+ MEMBER NAME  CUD
+ /** REXX -- DYNAMICALLY CREATE CLEAN UP JCL AFTER CURSOR POSITION **/
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY 'CUD EDIT MACRO CAN ONLY BE RUN UNDER ISPF EDIT!'
+       EXIT(12)
+    END
+    SUBCOM ISREDIT
+    IF RC = 0 THEN DO
+       ADDRESS ISREDIT "ISREDIT MACRO (PARMS) NOPROCESS"
+       PARMS = TRANSLATE(PARMS)
+       IF PARMS = "?" THEN SIGNAL DISPDOC
+    END
+    ELSE DO
+       SAY 'CUD EDIT MACRO CAN ONLY BE RUN UNDER ISPF EDIT!'
+       EXIT(12)
+    END
+
+    ADDRESS ISREDIT
+    "(LINE,COL) = CURSOR"
+    IF LINE = 1  THEN DO
+        ADDRESS ISPEXEC "VGET (ZSCREENC,ZSCREENI) SHARED"
+        II = INDEX(ZSCREENI,'* Top of Data *')
+        IF ( ZSCREENC % 80 )  <=  ( II % 80 )  THEN LINE = 0
+        ELSE LINE = 1
+    END
+    "PROCESS RANGE C"
+    IF RC > 0 THEN DO
+       "(TOP) = LINENUM .ZFIRST"
+       "(BOT) = LINENUM .ZLAST"
+    END
+    ELSE DO
+       "(TOP) = LINENUM .ZFRANGE"
+       "(BOT) = LINENUM .ZLRANGE"
+    END
+
+    CARD4 = "//           DISP=(MOD,DELETE,DELETE),",
+       ³³ "UNIT=SYSDA,SPACE=(TRK,0)"
+    CARD3 = "//DEL...     DD    DSN="
+    CARD2 = "//CLEANUP  EXEC  PGM=IEFBR14"
+    CARD1 = "//***"
+
+    ARRAY.0 = 0
+    DO II = TOP TO BOT
+       "ISREDIT (REC) = LINE &II"
+       IF (POS('DISP=(,CAT',REC) <> 0 ³ POS('DISP=(NEW,CAT',REC) <> 0),
+             & SUBSTR(REC,1,3) <> '//*' THEN DO
+          JJ = POS('DSN=',REC)
+          IF JJ = 0 THEN DO
+             JJ = POS('DSNAME=',REC)
+             IF JJ <> 0 THEN JJ = JJ + 3
+          END
+          IF JJ = 0 THEN DO
+             XX = II - 1
+             "ISREDIT (REC) = LINE &XX"
+             DO WHILE(SUBSTR(REC,1,3) = '//*' ³ SUBSTR(REC,1,2) = '/*')
+                XX = XX - 1
+                "ISREDIT (REC) = LINE &XX"
+             END
+             DO KK = 71 TO 1 BY -1 WHILE(SUBSTR(REC,KK,1) = ' ')
+             END KK
+             DO WHILE(SUBSTR(REC,KK,1) = ',')
+                JJ = POS('DSN=',REC)
+                IF JJ = 0 THEN DO
+                   JJ = POS('DSNAME=',REC)
+                   IF JJ <> 0 THEN JJ = JJ + 3
+                END
+                IF JJ <> 0 THEN LEAVE
+                XX = XX - 1
+                "ISREDIT (REC) = LINE &XX"
+                DO WHILE(SUBSTR(REC,1,3) = '//*')
+                   XX = XX - 1
+                   "ISREDIT (REC) = LINE &XX"
+                END
+                DO KK = 71 TO 1 BY -1 WHILE(SUBSTR(REC,KK,1) = ' ')
+                END KK
+             END
+             IF JJ = 0 THEN DO
+                XX = II
+                "ISREDIT (REC) = LINE &XX"
+                DO KK = 71 TO 1 BY -1 WHILE(SUBSTR(REC,KK,1) = ' ')
+                END KK
+                DO WHILE(SUBSTR(REC,KK,1) = ',')
+                   XX = XX + 1
+                   "ISREDIT (REC) = LINE &XX"
+                   DO WHILE(SUBSTR(REC,1,3) = '//*')
+                      XX = XX + 1
+                      "ISREDIT (REC) = LINE &XX"
+                   END
+                   JJ = POS('DSN=',REC)
+                   IF JJ = 0 THEN DO
+                      JJ = POS('DSNAME=',REC)
+                      IF JJ <> 0 THEN JJ = JJ + 3
+                   END
+                   IF JJ <> 0 THEN LEAVE
+                   DO KK = 71 TO 1 BY -1 WHILE(SUBSTR(REC,KK,1) = ' ')
+                   END KK
+                END
+             END
+          END
+          IF JJ <> 0 THEN DO
+             JJ = JJ + 4
+             DO KK = (JJ+1) TO 71,
+                WHILE(SUBSTR(REC,KK,1) <> ' ' & SUBSTR(REC,KK,1) <> ',')
+             END KK
+             IF SUBSTR(REC,kk-1,1) <> ')' THEN DO
+                ARRAY.0 = ARRAY.0 + 1
+                NN      = ARRAY.0
+                ARRAY.NN = SUBSTR(REC,JJ,KK-JJ)
+             END
+          END
+       END
+    END II
+
+    IF ARRAY.0 > 0 THEN "LINE_AFTER (LINE) = (CARD1)"
+    DO II = ARRAY.0 TO 1 BY -1
+       "LINE_AFTER (LINE) = (CARD4)"
+       CARD  = CARD3 ³³ ARRAY.II ³³ ','
+       PATCH = RIGHT(II,3,'0')
+       CARD  = OVERLAY(PATCH,CARD,6,3)
+       "LINE_AFTER (LINE) = (CARD)"
+    END II
+
+    IF ARRAY.0 > 0 THEN DO
+       "LINE_AFTER (LINE) = (CARD2)"
+       "LINE_AFTER (LINE) = (CARD1)"
+    END
+    ELSE SAY "No 'NEW,CATLG' dispositions found; no JCL generated!"
+
+    IF LINE = 0 AND COL = 0 THEN EXIT(1)
+    ELSE DO
+       'ISREDIT CURSOR = ' LINE COL
+       EXIT(0)
+    END
+
+ DISPDOC:
+    ADDRESS TSO "CLEAR"
+    SAY "CUD  -  DYNAMICALLY GENERATE CLEAN UP JCL AFTER CURSOR    "
+    SAY
+    SAY " FORMAT "
+    SAY
+    SAY "    CUD  ( ? )                                            "
+    SAY
+    SAY "       CREATE AN IEFBR14 WITH MOD/DELETE CARDS FOR EVERY  "
+    SAY "       NEW CATALOGED DATA SET IN THE FILE AND PLACE THEM  "
+    SAY "       IMMEDIATELY AFTER WHERE THE CURSOR IS POSITIONED.  "
+    SAY "       C/CC/C# MAY BE USED TO LIMIT THE SEARCH.           "
+    SAY
+    SAY "       A QUESTION MARK ALONE CAUSES THIS HELP TO DISPLAY. "
+    SAY
+    EXIT(1)
+
+
+ MEMBER NAME  GERRY
+ /* REXX */
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /*                                                                    */
+ /*                 THIS REXX IS CREATED BY TONY GAW                   */
+ /*                                                                    */
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+ /**** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!! **** TADAH!!!*/
+
+ /* SET A PFKEY TO  CONTAIN '%PTNSHOOT' NOT 'TSO %PTNSHOOT' */
+ ADDRESS ISREDIT
+     'MACRO ( OP )'
+     'ISREDIT (NUMMODE, OPTION) = NUMBER'
+
+     CHKNUM = INDEX(OPTION, 'NOCOBOL')
+
+     IF NUMMODE = 'ON' & CHKNUM = '0'  THEN
+         DO
+             STP     = 2
+             COL     = 2
+             COMMENT = 1
+             PADDER  = '     '
+         END
+     ELSE
+         DO
+             STP     = 1
+             COL     = 8
+             COMMENT = 7
+             PADDER  = '           '
+         END
+
+     IF OP /= '' THEN
+         PGM = '** '³³OP³³': '
+     ELSE
+         PGM = ''
+
+     'ISREDIT EXCLUDE ALL'
+     'ISREDIT FIND PROCEDURE &COL'
+     'ISREDIT LABEL .ZCSR =   .XX 0'
+     'ISREDIT FIND P"ª"      &COL'
+
+     DO FOREVER
+         IF RC /= 0 THEN
+             DO
+                 CALL SHOW
+                 EXIT
+             END
+         'ISREDIT (A1 B1)     = CURSOR'
+         'ISREDIT (THISLINE)  = LINE &A1'
+         'ISREDIT CURSOR = &A1'
+         IF SUBSTR(THISLINE, COMMENT, 1) /= '*' THEN
+             DO
+                 CALL CAPTURE
+                 STRING = PADDER³³"DISPLAY '&PGM&THISLINE'"³³'.'
+                 'ISREDIT LINE_AFTER  &A1 = DATALINE "&STRING"'
+             END
+      /* 'ISREDIT FIND P"ª" &COL' */
+         'ISREDIT RFIND'
+     END
+
+
+ CAPTURE:
+     'ISREDIT (A1 B1)     = CURSOR'
+     'ISREDIT (THISLINE)  = LINE &A1'
+
+     BB   = B1
+     LOOP = 0
+     DO WHILE LOOP = 0
+         IF BB > STP THEN
+             DO
+                 IF SUBSTR(THISLINE, BB, 1) /= ' ',
+                 &  SUBSTR(THISLINE, BB, 1) /= ':',
+                 &  SUBSTR(THISLINE, BB, 1) /= '=',
+                 &  SUBSTR(THISLINE, BB, 1) /= '.',
+                 &  SUBSTR(THISLINE, BB, 1) /= "'",
+                 &  SUBSTR(THISLINE, BB, 1) /= '(',
+                 &  SUBSTR(THISLINE, BB, 1) /= ')'  THEN
+                     BB = BB - 1
+                 ELSE
+                     DO
+                        BB = BB + 1
+                        LOOP = 1
+                     END
+              END
+         ELSE
+             LOOP = 1
+     END
+
+     LN   = 0
+     LOOP = 0
+     DO WHILE LOOP = 0
+         IF  SUBSTR(THISLINE,BB+LN,1) /= ' ',
+         &   SUBSTR(THISLINE,BB+LN,1) /= ':',
+         &   SUBSTR(THISLINE,BB+LN,1) /= ',',
+         &   SUBSTR(THISLINE,BB+LN,1) /= '=',
+         &   SUBSTR(THISLINE,BB+LN,1) /= '.',
+         &   SUBSTR(THISLINE,BB+LN,1) /= "'",
+         &   SUBSTR(THISLINE,BB+LN,1) /= '(',
+         &   SUBSTR(THISLINE,BB+LN,1) /= ')'   THEN
+             LN = LN + 1
+         ELSE
+             LOOP = 1
+     END
+
+     /*LN = LN - 1*/
+
+     THISLINE = SUBSTR(THISLINE, BB, LN)
+
+     RETURN
+
+ SHOW:
+     'ISREDIT FIND P"ª"   &COL     .XX .ZL ALL'
+     'ISREDIT EXCLUDE "*" &COMMENT .XX .ZL ALL'
+     RETURN
+ MEMBER NAME  DATE11
+  /* REXX */
+  /*         EXEC DISPLAYS CURRENT DATE & TIME */
+  /*                   */
+  SAY ' '
+  SAY '      DATE : 'DATE(U) '    JULIAN : 'DATE(J)
+  SAY '      DATE : 'DATE(S)
+  SAY '      DATE : 'DATE(W)
+  SAY ' '
+  SAY '                   TIME:  'TIME()
+  SAY ' '
+  WEEKDAY1 = DATE('WEEKDAY', '10/01/03', 'USA')
+  SAY ' OCT 01 2003 ' WEEKDAY1
+  EXIT
+ MEMBER NAME  DELL
+ ISREDIT MACRO
+ ISREDIT RESET                                  /* RESET ALL EDIT CMD*/
+ ISREDIT (LNUM) = LINENUM .ZFIRST
+ ISREDIT LABEL &LNUM  = .A  0
+ SET &LNUM = &LNUM + 4
+ ISREDIT LABEL &LNUM  = .B  0
+ ISREDIT EXCLUDE ALL .A .B
+ ISREDIT DELETE ALL X
+ MEMBER NAME  EVAL1
+ PROC 1 EXPRESSION
+ WRITE &EVAL(&EXPRESSION)
+ EXIT
+ MEMBER NAME  NUMCOB
+ ISREDIT MACRO
+ CONTROL NOFLUSH MSG
+ ISPEXEC CONTROL ERRORS CANCEL
+    ISREDIT NUMBER OFF
+    ISREDIT CHANGE P'=' ' ' ALL 73 80
+    ISREDIT NUMBER COBOL
+    ISREDIT RESET CHG
+ EXIT CODE(&MAXCC)
+ MEMBER NAME  NUMOFF
+ ISREDIT MACRO
+ CONTROL NOFLUSH MSG
+ ISPEXEC CONTROL ERRORS CANCEL
+    ISREDIT NUMBER OFF
+    ISREDIT CHANGE P'=' ' ' ALL 73 80
+    ISREDIT RESET CHG
+ EXIT CODE(&MAXCC)
+ MEMBER NAME  C2J
+  /* REXX */
+ C2J:        /*  CALENDAR TO JULIAN REXX function  */
+ ARG caldate
+   VERSION=" VER:001 09/20/91 "
+   JULDATE=99999
+   RELATIVE=99999
+   IF CALDATE='' THEN
+          SIGNAL EXIT
+   LEN=LENGTH(CALDATE)
+   IF LEN = 6 THEN DO
+        MM = SUBSTR(CALDATE,1,2)
+        DD = SUBSTR(CALDATE,3,2)
+        YY = SUBSTR(CALDATE,5,2)
+        SIGNAL EDIT
+   END
+   IF LEN = 8 & ,
+        SUBSTR(CALDATE,3,1) = '/' & SUBSTR(CALDATE,6,1) = '/' THEN DO
+            MM = SUBSTR(CALDATE,1,2)
+            DD = SUBSTR(CALDATE,4,2)
+            YY = SUBSTR(CALDATE,7,2)
+            SIGNAL EDIT
+   END
+   SIGNAL EXIT
+
+ EDIT:
+   IF DATATYPE(MM) = 'CHAR' ³ MM < 1 ³ MM > 12 THEN
+      SIGNAL EXIT
+   IF DD < 1 ³ DD > 31 THEN
+      SIGNAL EXIT
+   IF (MM = 9 ³ MM = 4 ³ MM = 6 ³ MM = 11) & DD > 30 THEN
+              SIGNAL EXIT
+   IF DATATYPE(YY) = 'CHAR' THEN
+     SIGNAL EXIT
+   IF MM <> 2 THEN
+        SIGNAL JUL
+   IF VALUE(YY//4) = 0 & DD > 29 THEN
+        SIGNAL EXIT
+   IF VALUE(YY//4) <> 0 & DD > 28 THEN
+        SIGNAL EXIT
+
+ JUL:
+   DDD=SUBSTR('000031059090120151181212243273304334',MM*3-2,3)
+   DDD=DDD + DD
+   IF VALUE(YY//4) = 0 & MM > 2 THEN
+         DDD = DDD + 1
+   L = LENGTH(DDD)
+   JULDATE = X00³³DDD
+   JULDATE =YY³³SUBSTR(JULDATE,L+1,3)
+
+ EXIT:
+   RETURN JULDATE
+ MEMBER NAME  JUL2CAL
+ /* rexx */
+ JUL2CAL: /* JULIAN TO CALENDAR CONVERT */
+   ARG JULDATE
+   "NEWSTACK"
+   REX="<JUL2CAL> "
+   VER="v1.5 12/15/93"
+   CALLED=SYSVAR(SYSNEST)
+   CALDATE='999999'
+   IF JULDATE='' THEN DO
+      IF CALLED='YES' THEN
+         SIGNAL EXIT
+      ELSE
+         DO WHILE JULDATE=''
+            SAY REX'Enter JULDATE-YYDDD or YY/DDD'
+            PULL JULDATE
+         END
+      END
+   LEN = LENGTH(JULDATE)
+   IF LEN = 5 THEN DO
+      YY=SUBSTR(JULDATE,1,2)
+      DDD=SUBSTR(JULDATE,3,3)
+      SIGNAL EDITDDD
+   END
+   IF LEN = 6 & SUBSTR(JULDATE,3,1) = "/" THEN DO
+      YY=SUBSTR(JULDATE,1,2)
+      DDD=SUBSTR(JULDATE,4,6)
+      SIGNAL EDITDDD
+   END
+
+ INVALID:
+   IF CALLED="NO" THEN
+      SAY 'PASSED JULDATE ' JULDATE 'IS INVALID'
+   SIGNAL EXIT
+
+ EDITDDD:
+   IF DATATYPE(YY³³DDD) = 'CHAR' THEN
+      SIGNAL INVALID
+   IF YY//4 = 0 THEN
+      MAXDAYS=366
+   ELSE
+      MAXDAYS=365
+   IF DDD > MAXDAYS THEN
+      SIGNAL INVALID
+   PNTR=12
+   DO WHILE PNTR > 0
+      IF PNTR > 2  & YY//4 = 0 THEN
+         PLUS=1
+      ELSE
+         PLUS=0
+      START=PNTR*3-2
+      END=PNTR*3
+      WK=SUBSTR('000031059090120151181212243273304334',START,3)+PLUS
+      IF DDD > WK THEN DO
+         MM=PNTR
+         DD=DDD-WK
+         PNTR=0
+      END
+      ELSE
+         PNTR=PNTR - 1
+   END
+   IF LENGTH(MM)=1 THEN
+      MM=0³³MM
+   IF LENGTH(DD)=1 THEN
+      DD=0³³DD
+   CALDATE=MM³³DD³³YY
+   IF LEN = 6 THEN
+      SHOWCAL=MM³³'/'³³DD³³'/'³³YY
+   ELSE
+      SHOWCAL=CALDATE
+
+   RELATIVE=DDD
+   RELATIVE = (YY*365) + ((YY-1)%4) + RELATIVE - 1
+   IF CALLED="NO" THEN
+      SAY REX 'FOR JULDATE='JULDATE', CALDATE='SHOWCAL
+
+ EXIT:
+   "DELSTACK"
+    RETURN CALDATE
+ MEMBER NAME  J2C
+ /* rexx */
+ JUL2CAL: /* JULIAN TO CALENDAR CONVERT */
+   ARG JULDATE
+   "NEWSTACK"
+   REX="<JUL2CAL> "
+   VER="v1.5 12/15/93"
+   CALLED=SYSVAR(SYSNEST)
+   CALDATE='999999'
+   IF JULDATE='' THEN DO
+      IF CALLED='YES' THEN
+         SIGNAL EXIT
+      ELSE
+         DO WHILE JULDATE=''
+            SAY REX'Enter JULDATE-YYDDD or YY/DDD'
+            PULL JULDATE
+         END
+      END
+   LEN = LENGTH(JULDATE)
+   IF LEN = 5 THEN DO
+      YY=SUBSTR(JULDATE,1,2)
+      DDD=SUBSTR(JULDATE,3,3)
+      SIGNAL EDITDDD
+   END
+   IF LEN = 6 & SUBSTR(JULDATE,3,1) = "/" THEN DO
+      YY=SUBSTR(JULDATE,1,2)
+      DDD=SUBSTR(JULDATE,4,6)
+      SIGNAL EDITDDD
+   END
+
+ INVALID:
+   IF CALLED="NO" THEN
+      SAY 'PASSED JULDATE ' JULDATE 'IS INVALID'
+   SIGNAL EXIT
+
+ EDITDDD:
+   IF DATATYPE(YY³³DDD) = 'CHAR' THEN
+      SIGNAL INVALID
+   IF YY//4 = 0 THEN
+      MAXDAYS=366
+   ELSE
+      MAXDAYS=365
+   IF DDD > MAXDAYS THEN
+      SIGNAL INVALID
+   PNTR=12
+   DO WHILE PNTR > 0
+      IF PNTR > 2  & YY//4 = 0 THEN
+         PLUS=1
+      ELSE
+         PLUS=0
+      START=PNTR*3-2
+      END=PNTR*3
+      WK=SUBSTR('000031059090120151181212243273304334',START,3)+PLUS
+      IF DDD > WK THEN DO
+         MM=PNTR
+         DD=DDD-WK
+         PNTR=0
+      END
+      ELSE
+         PNTR=PNTR - 1
+   END
+   IF LENGTH(MM)=1 THEN
+      MM=0³³MM
+   IF LENGTH(DD)=1 THEN
+      DD=0³³DD
+   CALDATE=MM³³DD³³YY
+   IF LEN = 6 THEN
+      SHOWCAL=MM³³'/'³³DD³³'/'³³YY
+   ELSE
+      SHOWCAL=CALDATE
+
+   RELATIVE=DDD
+   RELATIVE = (YY*365) + ((YY-1)%4) + RELATIVE - 1
+   IF CALLED="NO" THEN
+      SAY REX 'FOR JULDATE='JULDATE', CALDATE='SHOWCAL
+
+ EXIT:
+   "DELSTACK"
+    RETURN CALDATE
+ MEMBER NAME  JCT
+ /** REXX - INSERT SORT STEP JCL **/
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (PARM) NOPROCESS"
+
+    ADDRESS ISREDIT
+  REC = "//PROC01 JCLLIB ORDER=(PDX01.CDACDA.C0213802.PROC1)"
+    "LINE_AFTER 0 = (REC)"
+  REC = "/*JOBPARM S=ANY"
+    "LINE_AFTER 0 = (REC)"
+  REC = "/*ROUTE PRINT RMT163"
+    "LINE_AFTER 0 = (REC)"
+  REC = "//             REGION=8M,NOTIFY=TIRAJON,TYPRUN=SCAN"
+    "LINE_AFTER 0 = (REC)"
+ REC = "//TIRAJON1 JOB (IT00,0000),'RAMA  JON-46569',CLASS=W,MSGCLASS=X,"
+    "LINE_AFTER 0 = (REC)"
+    RETURN(0)
+
+ MEMBER NAME  IEZT
+ /** REXX - INSERT SORT STEP JCL **/
+
+    SAVEMSG = MSG()
+    X = MSG("OFF")
+    X = ADDRESS()
+    SUBCOM ISPEXEC
+    IF RC <> 0 THEN DO
+       SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+       SIGNAL QUIT
+       END
+    SUBCOM ISREDIT
+    UMODE = "ISREDIT"
+    ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+    ADDRESS ISREDIT
+    "MACRO (PARM) NOPROCESS"
+
+    ADDRESS ISREDIT
+    "(LINE,COL) = CURSOR"
+    REC = "END-IF"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "   GOTO JOB"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "IF IND-1 EQ 'DATE'"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "JOB INPUT FILEA"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "COUNT   W  5  N"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "IND-1                                28      4 A"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "FILE FILEA"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSIN     DD *"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSUDUMP  DD SYSOUT=Y"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSPRINT  DD SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//SYSOUT    DD SYSOUT=*"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//EZTVFM    DD SPACE=(CYL,(5,2),RLSE),UNIT=SYSDA"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//FILEA     DD DSN=BQ00.CCM55.BALEXTR(0),DISP=SHR"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//          DD DSN=FDS.EASYPLUS,DISP=SHR"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//          DD DSN=BISG.PRODLIB,DISP=SHR"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//          DD DSN=SYS1.SCEERUN,DISP=SHR"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//STEPLIB   DD DSN=TCH.PROD.EZTP.V63.CAILIB,DISP=SHR"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//STEP01  EXEC PGM=EZTPA00"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//*******************************************************"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//* SAMPLE EZTREVE JCL                                  *"
+    "LINE_AFTER (LINE) = (REC)"
+    REC = "//*******************************************************"
+    "LINE_AFTER (LINE) = (REC)"
+    "LOCATE" LINE
+    LINE_X  = LINE + 3
+    COL_X   = 38
+    "CURSOR =" LINE_X COL_X
+    RETURN(0)
+
+ MEMBER NAME  JSTAR
+ /**********************************************************************/
+ /* EDIT MACRO COMMAND ARE EXECUTED BY TYPE THE MEMBER NAME ONLY.  IT  */
+ /* DOES NOT REQUIRE TO TYPE TSO EDITMACRO-NAME TO EXECUTE             */
+ /**********************************************************************/
+
+ ISREDIT MACRO
+     ISREDIT CHANGE  .A .B 1 2 '//' '//*//' ALL
+     ISREDIT CHANGE  .A .B 1 2 '  ' '//*  ' ALL
+     ISREDIT CHANGE  .A .B 1 2 '/*' '//*/*' ALL
+ EXIT
+ MEMBER NAME  NJSTAR
+ /**********************************************************************/
+ /* EDIT MACRO COMMAND ARE EXECUTED BY TYPE THE MEMBER NAME ONLY.  IT  */
+ /* DOES NOT REQUIRE TO TYPE TSO EDITMACRO-NAME TO EXECUTE             */
+ /**********************************************************************/
+
+ ISREDIT MACRO
+     ISREDIT CHANGE  .A .B  1 5 '//*  ' '  ' ALL
+     ISREDIT CHANGE  .A .B  1 5 '//*/*' '/*' ALL
+     ISREDIT CHANGE  .A .B  1 5 '//*//' '//' ALL
+ EXIT
+ MEMBER NAME  NSTAR
+ /**********************************************************************/
+ /* EDIT MACRO COMMAND ARE EXECUTED BY TYPE THE MEMBER NAME ONLY.  IT  */
+ /* DOES NOT REQUIRE TO TYPE TSO EDITMACRO-NAME TO EXECUTE             */
+ /**********************************************************************/
+
+ ISREDIT MACRO
+     ISREDIT (NUMMODE, OPTION) = NUMBER
+
+     SET CHKNUM = &SYSINDEX(NOCOBOL,NRSTR(&OPTION))
+
+     IF  &NUMMODE  = ON AND &CHKNUM   = 0   THEN +
+         SET &S_COL = 1
+     ELSE +
+         SET &S_COL = 7
+
+     SET &E_COL = &S_COL + 1
+
+     ISREDIT CHANGE  .A .B &S_COL &E_COL '*' ' ' ALL
+ EXIT
+ MEMBER NAME  NZSTAR
+ /**********************************************************************/
+ /* EDIT MACRO COMMAND ARE EXECUTED BY TYPE THE MEMBER NAME ONLY.  IT  */
+ /* DOES NOT REQUIRE TO TYPE TSO EDITMACRO-NAME TO EXECUTE             */
+ /**********************************************************************/
+
+ ISREDIT MACRO
+     ISREDIT CHANGE  .A .B 1 '*' ' ' ALL
+ EXIT
+ MEMBER NAME  NUMDAYS
+ *       PDX    - NUMDAYS  C0194475 08/21/03 11:59:05 TBTHSTA
+ *          DATA SET NUMDAYS    AT LEVEL 001 AS OF 11/02/90
+ *             *          NUMDAYS - SUB-PROGRAM                          00002
+ *             *                                                         00003
+ *             * THE PURPOSE OF THIS SUB-PROGRAM IS TO CALCULATE THE     00004
+ *             * NUMBER OF DAYS BETWEEN ANY 2 CALENDAR DATES             00005
+ *             *                                                         00006
+ *             * THREE PARAMETERS ARE PASSED TO ROUTINE                  00007
+ *             *                                                         00008
+ *             *     1. FROMDATE - 8 DIGIT UNSIGNED FROM MMDDYYYY DATE   00009
+ *             *                                                         00010
+ *             *     2. TODATE   - 8 DIGIT UNSIGNED TO MMDDYYYY DATE     00011
+ *             *                                                         00012
+ *             *     3. DAYSOLD - 7 CHARACTER FIELD WHICH UPON EXECUTION 00013
+ *             *               OF THIS ROUTINE WILL CONTAIN EITHER:      00014
+ *             *                  A. HIGH VALUES IF ANY DATES INVALID OR 00015
+ *             *                                OR                       00016
+ *             *                  B. A 7 DIGIT SIGNED NUMBER CONTAINING  00017
+ *             *                     THE NUMBER OF DAYS BETWEEN THE TWO  00018
+ *             *                     CALENDAR DATES.                     00019
+ *             *                                                         00020
+ *             *               NOTE IF FROM DATE IS GREATER THAN TO DATE 00021
+ *             *                    ANSWER WILL BE NEGATIVE.             00022
+ NUMDAYS  CSECT                                                          00023
+ NUMDAYS  AMODE ANY                                                      00023
+          EQUREG                                                         00024
+          USING *,R15                                                    00025
+          SAVE  (14,12),,*                                               00026
+          DROP  R15                                                      00027
+          BALR  R11,0                                                    00028
+          USING *,R11                                                    00029
+          LR    R2,R13                                                   00030
+          ST    R13,SAVE+4                                               00031
+          LA    R13,SAVE                                                 00032
+          ST    R13,8(R2)                                                00033
+          CNOP  0,4                                                      00034
+          B     BEGIN                                                    00035
+ SAVE     DS    18F                                                      00036
+ BEGIN    EQU   *                                                        00037
+          USING FROM,R2                                                  00038
+          USING TO,R3                                                    00039
+          USING DAYSOLD,R4                                               00040
+          COPY  MSGASMA                                                  00041
+          LM    R2,R4,0(R1)                                              00042
+          COBLOAD1 G2AJUL
+ SETFROM  MVC   WORKCAL,FROMDATE                                         00043
+ *        CALL  G2AJUL,(WORKCAL,WORKJUL),VL                              00044
+          CALLA G2AJUL,(WORKCAL,WORKJUL)                                 00044
+          CLC   WORKJUL,HIVALS                                           00045
+          BE    CALERR                                                   00046
+          PACK  FROMJUL,WORKJUL                                          00047
+ SETTO    MVC   WORKCAL,TODATE                                           00048
+ *        CALL  G2AJUL,(WORKCAL,WORKJUL),VL                              00049
+          CALLA G2AJUL,(WORKCAL,WORKJUL)                                 00049
+          CLC   WORKJUL,HIVALS                                           00050
+          BE    CALERR                                                   00051
+          PACK  TOJUL,WORKJUL                                            00052
+ CALC     EQU   *                                                        00053
+          SP    TOJUL,FROMJUL                                            00054
+          UNPK  DAYCNT,TOJUL                                             00055
+          B     RETURN                                                   00056
+ *                                                                       00057
+ CALERR   MVC   DAYCNT,HIVALS                                            00058
+          B     RETURN                                                   00059
+ *                                                                       00060
+ RETURN   L     R13,SAVE+4                                               00061
+          RETURN (14,12),RC=0                                            00062
+ *                                                                       00063
+          DC    C'PACKWORK='                                             00064
+ PACK1    DS    PL8                                                      00065
+ PACK2    DS    PL8                                                      00066
+          DC    C'WORKCAL='                                              00067
+ WORKCAL  DS    CL8                                                      00068
+          DC    C'WORKJUL='                                              00069
+ WORKJUL  DS    CL7                                                      00070
+          DC    C'FROMJUL='                                              00071
+ FROMJUL  DS    PL4                                                      00072
+          DC    C'TOJUL='                                                00073
+ TOJUL    DS    PL4                                                      00074
+ HIVALS   DC    20X'FF'                                                  00075
+ P1       DC    P'1'                                                     00076
+ P0       DC    P'0'                                                     00077
+ *                                                                       00078
+          LTORG                                                          00079
+ * DSECTS                                                                00080
+ *                                                                       00081
+ FROM     DSECT                                                          00082
+ FROMDATE DS    CL8                                                      00083
+ *                                                                       00084
+ TO       DSECT                                                          00085
+ TODATE   DS    CL8                                                      00086
+ *                                                                       00087
+ DAYSOLD  DSECT                                                          00088
+ DAYCNT   DS    CL7                                                      00089
+          END                                                            00090
+ MEMBER NAME  DATECONV
+ *       PDX    - DATECONV C0206984 06/07/04 12:56:11 TBCAKRA
+ *       PDX    - DATECONV C0194475 08/29/03 10:49:34 TBTHSTA
+ *          DATA SET DATECONV   AT LEVEL 002 AS OF 04/02/79
+ *              *              DATECONV SUBROUTINE                       00001
+ *              *                                                        00002
+ *              *    THE PURPOSE OF THIS SUBROUTINE IS TO CONVERT        00003
+ *              *    CALENDAR DATES MMDDYY TO JULIAN YYDDD OR            00004
+ *              *    VISA-VERSA.                                         00005
+ *              *                                                        00006
+ *              * A. TO CONVERT CALENDAR TO JULIAN                       00007
+ *              *       CALL 'DCALJUL' USING CALDATE-MMDDYY,             00008
+ *              *                            JULDATE-YYDDD.              00009
+ *              *                                                        00010
+ *              *         UPON EXECUTION OF ROUTINE JULDATE WILL         00011
+ *              *              CONTAIN HEX FF IF CALDATE WAS INVALID OR  00012
+ *              *              THE JULIAN DATE.                          00013
+ *              *                                                        00014
+ *              *                                                        00015
+ *              * B. TO CONVERT JULIAN TO CALENDER                       00016
+ *              *       CALL 'DJULCAL' USING JULDATE-YYDDD,              00017
+ *              *                            CALDATE-MMDDYY.             00018
+ *              *                                                        00019
+ *              *         UPON EXECUTION OF ROUTINE CALDATE WILL         00020
+ *              *              CONTAIN HEX FF IF JULDATE WAS INVALID OR  00021
+ *              *              THE CALENDAR DATE.                        00022
+ *              *                                                        00023
+ *              * NOTE: ALWAY MAKE AN INCLUDE CARD FOR DATECONV.         00024
+          EJECT                                                          00025
+ DATECONV START 0                                                        00026
+ DATECONV AMODE ANY                                                      00026
+          EQUREG                                                         00027
+          ENTRY DJULCAL,DCALJUL                                          00028
+          USING DATECONV,R11                                             00029
+          USING JULIAN,R2                                                00030
+          USING CALENDAR,R3                                              00031
+          BR    R14                                                      00032
+ *                                                                       00033
+          USING *,R15                                                    00034
+ * DCALJUL - CONVERT CALENDAR DATE MMDDYY TO JULIAN DATE YYDDD           00035
+ DCALJUL  EQU   *                                                        00036
+          SAVE  (14,12)                  SAVE USERS REGS                 00037
+          BAL   R14,INITIAL                                              00038
+          DROP  R15                                                      00039
+          BAL   R12,SAVELOAD                                             00040
+            COPY MSGASMA                                                 00041
+          L     R3,0(R1)                                                 00042
+          L     R2,4(R1)                                                 00043
+          MVC   TESTFLD+L'TESTFLD-L'CALDATE(L'CALDATE),CALDATE           00044
+          BAL   R12,NUMTEST                                              00045
+          CLC   CALDATE,TESTFLD+L'TESTFLD-L'CALDATE                      00046
+          BNE   CALERR                                                   00047
+          PACK  PACKFLD,CALMONTH                                         00048
+          CP    PACKFLD,P1                                               00049
+          BL    CALERR                                                   00050
+          CP    PACKFLD,P12                                              00051
+          BH    CALERR                                                   00052
+          CVB   R5,PACKFLD                                               00053
+          MH    R5,H2                                                    00054
+          PACK  PACKFLD,CALYEAR                                          00055
+          BAL   R12,LEAPTEST                                             00056
+          A     R5,TBLADDR                                               00057
+          ZAP   PACKWORK,0(2,R5)                                         00058
+          SH    R5,H2               DECREMENT TO PRIOR ENTRY             00059
+          SP    PACKWORK,0(2,R5)                                         00060
+          PACK  PACKFLD,CALDAY                                           00061
+          CP    PACKFLD,P1                                               00062
+          BL    CALERR                                                   00063
+          CP    PACKFLD,PACKWORK                                         00064
+          BH    CALERR                                                   00065
+          AP    PACKFLD,0(2,R5)                                          00066
+          UNPK  JULDAY,PACKFLD                                           00067
+          OI    JULDAY+2,X'F0'                                           00068
+          MVC   JULYEAR,CALYEAR                                          00069
+          B     RETURN                                                   00070
+ CALERR   MVI   JULDATE,X'FF'                                            00071
+          MVC   JULDATE+1(L'JULDATE-1),JULDATE                           00072
+          B     RETURN                                                   00073
+ * DJULCAL - CONVERT JULIAN DATE YYDDD TO CALENDAR DATE MMDDYY           00074
+ DJULCAL  EQU   *                                                        00075
+          USING *,R15                                                    00076
+          SAVE  (14,12)                                                  00077
+          BAL   R14,INITIAL                                              00078
+          DROP  R15                                                      00079
+          BAL   R12,SAVELOAD                                             00080
+          LM    R2,R3,0(R1)                                              00081
+          MVC   TESTFLD+L'TESTFLD-L'JULDATE(L'JULDATE),JULDATE           00082
+          BAL   R12,NUMTEST                                              00083
+          CLC   JULDATE,TESTFLD+L'TESTFLD-L'JULDATE                      00084
+          BNE   JULERR                                                   00085
+          PACK  PACKWORK,JULDAY                                          00086
+          CP    PACKWORK,P1                                              00087
+          BL    JULERR                                                   00088
+          PACK  PACKFLD,JULYEAR                                          00089
+          BAL   R12,LEAPTEST                                             00090
+          L     R4,TBLADDR                                               00091
+          LA    R5,13                                                    00092
+ LOOKUP   CP    PACKWORK,0(2,R4)                                         00093
+          BH    INDEX                                                    00094
+          SR    R6,R6                                                    00095
+          LR    R7,R4                                                    00096
+          SH    R4,H2                                                    00097
+          SP    PACKWORK,0(2,R4)                                         00098
+          UNPK  CALDAY,PACKWORK                                          00099
+          OI    CALDAY+1,X'F0'                                           00100
+          S     R7,TBLADDR                                               00101
+          LA    R8,2                                                     00102
+          DR    R6,R8                                                    00103
+          CVD   R7,PACKFLD                                               00104
+          UNPK  CALMONTH,PACKFLD                                         00105
+          OI    CALMONTH+1,X'F0'                                         00106
+          MVC   CALYEAR,JULYEAR                                          00107
+          B     RETURN                                                   00108
+ INDEX    LA    R4,2(R4)                                                 00109
+          BCT   R5,LOOKUP                                                00110
+ JULERR   MVI   CALDATE,X'FF'                                            00111
+          MVC   CALDATE+1(L'CALDATE-1),CALDATE                           00112
+          B     RETURN                                                   00113
+ *                                                                       00114
+ SAVELOAD EQU   *                                                        00115
+          ST    R13,SAVE+4                                               00116
+          LA    R2,SAVE                                                  00117
+          ST    R2,8(R13)                                                00118
+          LR    R13,R2                                                   00119
+          LA    R2,NORMYR                                                00120
+          ST    R2,NORMADDR                                              00121
+          LA    R2,LEAPYR                                                00122
+          ST    R2,LEAPADDR                                              00123
+          BR    R12                                                      00124
+ *                                                                       00125
+ NUMTEST  EQU   *                                                        00126
+          NC    TESTFLD,HEX0F                                            00127
+          TR    TESTFLD,NUMTBL                                           00128
+          BR    R12                                                      00129
+ *                                                                       00130
+ LEAPTEST EQU   *                                                        00131
+          MVC   TBLADDR,NORMADDR                                         00132
+          CP    PACKFLD,P0                                               00133
+          BE    MVCLEAP                                                  00134
+          DP    PACKFLD,P4                                               00135
+          CP    PACKFLD+L'PACKFLD-L'P4(L'P4),P0                          00136
+          BCR   7,R12                                                    00137
+ MVCLEAP  MVC   TBLADDR,LEAPADDR                                         00138
+          BR    R12                                                      00139
+ *                                                                       00140
+ INITIAL  EQU   *                                                        00141
+          BALR  R15,R0                                                   00142
+          USING *,R15                                                    00143
+          L     R11,ADATECNV                                             00144
+          BR    R14                                                      00145
+ ADATECNV DC    A(DATECONV)                                              00146
+          DROP  R15                                                      00147
+ *                                                                       00148
+ RETURN   L     R13,SAVE+4                                               00149
+          RETURN (14,12),RC=0                                            00150**2
+ *                                                                       00151
+ TESTFLD  DS    CL16                                                     00152
+ HEX0F    DC    16X'0F'                                                  00153
+ NUMTBL   DC    C'0123456789000000'                                      00154
+ PACKFLD  DS    D                                                        00155
+ P1       DC    P'1'                                                     00156
+ P12      DC    P'12'                                                    00157
+ P0       DC    P'0'                                                     00158
+ H2       DC    H'2'                                                     00159
+ H0       DC    H'0'                                                     00160
+ LEAPDISP DS    H                                                        00161
+ P4       DC    P'4'                                                     00162
+ PACKWORK DS    PL8                                                      00163
+ SAVE     DS    9D                                                       00164
+ NORMADDR DS    F                                                        00165
+ LEAPADDR DS    F                                                        00166
+ TBLADDR  DS    F                                                        00167
+ *                                                                       00168
+ NORMYR   DC    X'000F'                                                  00169
+          DC    X'031F'                                                  00170
+          DC    X'059F'                                                  00171
+          DC    X'090F'                                                  00172
+          DC    X'120F'                                                  00173
+          DC    X'151F'                                                  00174
+          DC    X'181F'                                                  00175
+          DC    X'212F'                                                  00176
+          DC    X'243F'                                                  00177
+          DC    X'273F'                                                  00178
+          DC    X'304F'                                                  00179
+          DC    X'334F'                                                  00180
+          DC    X'365F'                                                  00181
+ *                                                                       00182
+ LEAPYR   DC    X'000F'                                                  00183
+          DC    X'031F'                                                  00184
+          DC    X'060F'                                                  00185
+          DC    X'091F'                                                  00186
+          DC    X'121F'                                                  00187
+          DC    X'152F'                                                  00188
+          DC    X'182F'                                                  00189
+          DC    X'213F'                                                  00190
+          DC    X'244F'                                                  00191
+          DC    X'274F'                                                  00192
+          DC    X'305F'                                                  00193
+          DC    X'335F'                                                  00194
+          DC    X'366F'                                                  00195
+ *                                                                       00196
+          LTORG                                                          00197
+ * DSECTS                                                                00198
+ JULIAN   DSECT                                                          00199
+ JULDATE  DS    0CL5                                                     00200
+ JULYEAR  DS    CL2                                                      00201
+ JULDAY   DS    CL3                                                      00202
+ *                                                                       00203
+ CALENDAR DSECT                                                          00204
+ CALDATE  DS    0CL6                                                     00205
+ CALMONTH DS    CL2                                                      00206
+ CALDAY   DS    CL2                                                      00207
+ CALYEAR  DS    CL2                                                      00208
+ *                                                                       00209
+          END                                                            00210
+ MEMBER NAME  DATENEW
+ *       PDX    - DATENEW  C0194475 08/21/03 11:45:23 TBTHSTA
+ *          DATA SET DATENEW    AT LEVEL 001 AS OF 01/11/91
+ *********************************************************************** 00001
+ *                                                                       00002
+ *                   DATENEW - SUB-PROGRAM    A/O 1/91                   00003
+ *                                                                       00004
+ *                                                                       00005
+ *        THE PURPOSE OF THIS SUBROUTINE IS TO TAKE A GIVEN              00006
+ *        DATE-MMDDYYYY, AND A GIVEN NUMBER OF DAYS; PLUS OR             00007
+ *        MINUS, AND CALCULATE THE NEW DATE RESULTING FROM               00008
+ *        ADDITION OF THE NUMBER OF DAYS.                                00009
+ *                                                                       00010
+ *        THERE ARE 3 PARAMETERS PASSED                                  00011
+ *                                                                       00012
+ *                  A.   DATE - MMDDYYYY                                 00013
+ *                                                                       00014
+ *                  B.   NUM OF DAYS - 7 DIGITS *SIGNED*                 00015
+ *                                                                       00016
+ *                  C.   NEW-DATE  WHICH UPON COMPLETION OF THIS         00017
+ *                          ROUTINE WILL CONTAIN EITHER                  00018
+ *                             1. HEX FF'S IF DATE OR NUM OF DAYS        00019
+ *                                 IS INVALID                            00020
+ *                                            OR                         00021
+ *                             2. THE NEW-DATE IN MMDDYYYY FORMAT        00022
+ *********************************************************************** 00023
+ DATENEW  CSECT                                                          00024
+ DATENEW  AMODE ANY                                                      00024
+          EQUREG                                                         00025
+          USING *,R15                                                    00026
+          SAVE  (14,12),,*                                               00027
+          DROP  R15                                                      00028
+          BALR  R11,0                                                    00029
+          USING *,R11                                                    00030
+          LR    R2,R13                                                   00031
+          ST    R13,SAVE+4                                               00032
+          LA    R13,SAVE                                                 00033
+          ST    R13,8(R2)                                                00034
+          CNOP  0,4                                                      00035
+          B     BEGIN                                                    00036
+ SAVE     DS    18F                                                      00037
+ BEGIN    EQU   *                                                        00038
+          USING BASE,R2                                                  00039
+          USING DAYS,R3                                                  00040
+          USING NEW,R4                                                   00041
+          COPY  MSGASMA                                                  00042
+          LM    R2,R4,0(R1)                                              00043
+          COBLOAD1 G2AJUL
+          COBLOAD1 AJUL2G
+ SETBASE  MVC   WORKCAL,BASEDATE                                         00044
+ *        CALL  G2AJUL,(WORKCAL,WORKJUL),VL                              00045
+          CALLA G2AJUL,(WORKCAL,WORKJUL)
+          CLC   WORKJUL,HIVALS                                           00046
+          BE    ERROR                                                    00047
+          PACK  BASEJUL,WORKJUL                                          00048
+ EDITDAYS EQU   *                                                        00049
+          MVC   TESTFLD,NUMDAYS                                          00050
+          NC    TESTFLD,HEX0F                                            00051
+          TR    TESTFLD,TRANSTBL                                         00052
+          MVZ   TESTFLD+L'TESTFLD-1(1),NUMDAYS+L'NUMDAYS-1               00053
+          OI    TESTFLD+L'TESTFLD-1,X'C0'                                00054
+          CLC   TESTFLD,NUMDAYS                                          00055
+          BNE   ERROR                                                    00056
+          PACK  WORKDAYS,NUMDAYS                                         00057
+ CALC     EQU   *                                                        00058
+          AP    BASEJUL,WORKDAYS                                         00059
+          UNPK  WORKJUL,BASEJUL                                          00060
+          OI    WORKJUL+L'WORKJUL-1,X'F0'                                00061
+ *        CALL  AJUL2G,(WORKJUL,WORKCAL),VL                              00062
+          CALLA AJUL2G,(WORKJUL,WORKCAL)
+          CLC   WORKCAL,HIVALS                                           00063
+          BNE   SETNEW                                                   00064
+          ABEND 1800,DUMP                                                00065
+ SETNEW   MVC   NEWDATE,WORKCAL                                          00066
+          B     RETURN                                                   00067
+ *                                                                       00068
+ ERROR    MVC   NEWDATE,HIVALS                                           00069
+          B     RETURN                                                   00070
+ *                                                                       00071
+ RETURN   L     R13,SAVE+4                                               00072
+          RETURN (14,12),RC=0                                            00073
+ *                                                                       00074
+          DC    C'PACKWORK='                                             00075
+ PACK1    DS    PL8                                                      00076
+ PACK2    DS    PL8                                                      00077
+          DC    C'WORKCAL='                                              00078
+ WORKCAL  DS    CL8                                                      00079
+          DC    C'WORKJUL='                                              00080
+ WORKJUL  DS    CL7                                                      00081
+          DC    C'BASEJUL='                                              00082
+ BASEJUL  DS    PL4                                                      00083
+          DC    C'NEWJUL='                                               00084
+ NEWJUL   DS    PL4                                                      00085
+          DC    C'WORKDAYSS='                                            00086
+ WORKDAYS DS   PL4                                                       00087
+ HIVALS   DC    20X'FF'                                                  00088
+ P1       DC    P'1'                                                     00089
+ P0       DC    P'0'                                                     00090
+ TESTFLD  DS    CL7                                                      00091
+ HEX0F    DC    7X'0F'                                                   00092
+ TRANSTBL DC    C'0123456789000000'                                      00093
+ *                                                                       00094
+          LTORG                                                          00095
+ * DSECTS                                                                00096
+ *                                                                       00097
+ BASE     DSECT                                                          00098
+ BASEDATE DS    CL8                                                      00099
+ *                                                                       00100
+ DAYS     DSECT                                                          00101
+ NUMDAYS  DS    CL7                                                      00102
+ *                                                                       00103
+ NEW      DSECT                                                          00104
+ NEWDATE  DS    CL8                                                      00105
+          END                                                            00106
+ MEMBER NAME  DATECON
+  /* REXX */
+  /*         EXEC DISPLAYS CURRENT DATE & TIME */
+  /*                   */
+  SAY ' '
+  SAY '      DATE : 'DATE(U) '    JULIAN : 'DATE(J)
+  SAY '      DATE : 'DATE(S)
+  SAY '      DATE : 'DATE(W)
+  SAY ' '
+  SAY '                   TIME:  'TIME()
+  SAY ' '
+  TODAY = DATE('B')   /* TODAY'S DATE IN BASEDATE FORMAT */
+  SAY ' TODAY IS ' TODAY
+  SAY '120 DAYS FROM TODAY IS' DATECONV(TODAY, 'B', 'N')
+  WEEKDAY1 = DATE('WEEKDAY', '10/01/03', 'USA')
+  SAY ' OCT 01 2003 ' WEEKDAY1
+  EXIT
+
