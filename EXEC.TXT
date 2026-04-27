@@ -1,0 +1,3908 @@
+./       ADD   NAME=#TEST
+  TSO EXEC 'JONNALR.EXEC(CONCAT)' EXEC                                  00010001
+./       ADD   NAME=ACICS
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('ACPT.CICS.COBOL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('ACPT.CICS.COBOL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=ACOB
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('ACPT.BATCH.COBOL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('ACPT.BATCH.COBOL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=ACOPY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('ACPT.BATCH.COPY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('ACPT.BATCH.COPY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=AJCL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('ACPT.BATCH.JCL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('ACPT.BATCH.JCL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=AMAP
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('ACPT.CICS.MAP')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('ACPT.CICS.MAP("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=APARM
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('ACPT.BATCH.PARMLIB')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('ACPT.BATCH.PARMLIB("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=APROC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('SYS4.ACPTPROC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('SYS4.ACPTPROC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=BA
+  /***************************  REXX  *******************************/
+  /*     (C)  COPYRIGHT   ROGER LACROIX   1996                      */
+  /*                                                                */
+  /* DESIGNED, DEVELOPED AND PROGRAMMED BY ROGER LACROIX            */
+  /******************************************************************/
+  /*                                                                */
+  /* BROWSE A SEQUENTIAL FILE OR GDG THAT HAS RECFM AS FBA.         */
+  /* WHEN YOU BROWSE A DATASET WITH THIS UTILITY, COLUMN 1 WILL     */
+  /* BE INCLUDED.                                                   */
+  /*                                                                */
+  /* EXAMPLES:                                                      */
+  /*                                                                */
+  /*    TSO %BA 'XXXX.YYYY.LISTING'                                 */
+  /*                                                                */
+  /* OR                                                             */
+  /*                                                                */
+  /*    AT 3.4 DSN LIST TYPE "BA" BESIDE THE DATASET TO BE BROWSED. */
+  /*                                                                */
+  /******************************************************************/
+  ARG INDSN1 THE_REST
+  ADDRESS TSO
+  IF INDSN1 <> "" THEN DO
+     X = LISTDSI(INDSN1)          /* GET RECFM STUFF FOR THIS DATASET */
+     IF SYSRECFM = "FBA" | SYSRECFM = "VBA" | ,
+        SYSRECFM = "FBM" | SYSRECFM = "VBM" | ,
+        SYSRECFM = "FB"  | SYSRECFM = "VB"    THEN DO
+        IF SYSRECFM = "FBA" | SYSRECFM = "FBM" | SYSRECFM = "FB" THEN
+           RECFM = "F B"     /* SYSRECFM = "FBA" OR "FBM" OR "FB" */
+        ELSE
+           RECFM = "V B"     /* SYSRECFM = "VBA" OR "VBM" OR "VB" */
+        "ALLOCATE DD(INFILE) DATASET("INDSN1") RECFM("RECFM") SHR REUSE"
+        RCODE = RC
+        IF RCODE = 0 THEN DO
+           ADDRESS ISPEXEC
+           "LMINIT DATAID(INDSN) DDNAME(INFILE) ENQ(SHR)"
+           "LMOPEN DATAID("INDSN")"
+           RCODE = RC
+           IF RCODE = 0 THEN
+              'BROWSE DATAID('INDSN')'   /* NOW BROWSE THE DATASET */
+           ELSE
+              SAY "BROWSE FAILED - RC="RCODE
+           'LMCLOSE DATAID('INDSN')'     /* CLOSE AND FREE DATASET */
+           'LMFREE DATAID('INDSN')'
+           ADDRESS TSO
+           'FREE F(INFILE)'
+        END
+        ELSE
+           SAY "ALLOCATE FAILED - RC="RCODE
+     END
+     ELSE
+        SAY "THIS DATASET HAS AN UNSUPPORTED RECFM="SYSRECFM
+  END
+  ELSE
+     SAY "NO INPUT DSN SPECIFIED.  PLEASE TRY AGAIN"
+  RETURN
+./       ADD   NAME=BATCHEDT
+ADDRESS ISREDIT
+"MACRO"
+"CHANGE ALL 'PROD' '@@@@'"
+"SAVE"
+"END"
+./       ADD   NAME=BATCHED1
+ISPEXEC EDIT DATASET('bc0thor.test.data') MACRO(batchedt)               00010000
+./       ADD   NAME=BCICS
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.CICS.COBOL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.CICS.COBOL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=BCNTL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.CNTL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.CNTL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=BCOB
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.BATCH.COBOL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.BATCH.COBOL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=BCOPY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.COPY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.COPY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=BEXT
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('BMTR$DV.BMTR800B.ACCOUNT.EXT.TST')"
+   EXIT
+   END
+./       ADD   NAME=BJCL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.JCL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.JCL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=BPARM
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.PARM')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.PARM("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=BPROC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.PROC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('BMTR$DV.BM2009.PROC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=BTCHREXX
+//JONNALR1 JOB (TEST,DEV),'RAMA  JON-2166',CLASS=F,MSGCLASS=X,
+//             REGION=8M,NOTIFY=JONNALR
+/*JOBPARM SYSAFF=TOYB
+//JOBLIB    DD DSN=TEST.BATCH.LOAD,DISP=SHR
+//          DD DSN=PROD.BATCH.LOAD,DISP=SHR
+//STEP010 EXEC PGM=IKJEFT01
+//SYSTSPRT DD SYSOUT=*
+//SYSTSIN DD *
+  EXEC 'JONNALR.EXEC(TEST1)'
+/*
+./       ADD   NAME=BVIEW
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('BMTR$DV.BM2009.DB2.VIEW')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('BMTR$DV.BM2009.DB2.VIEW("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=CJCL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.CDM.JCL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.CDM.JCL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=CLONEJOB
+//JONNALR1 JOB (TEST,DEV),'RAMA  JON-2166',CLASS=F,MSGCLASS=X,
+//             REGION=8M,NOTIFY=JONNALR
+//*
+//**********************************************************************
+//* DELETE THE OUTPUT FILE IF EXISTS                                   *
+//**********************************************************************
+//*
+//STEP010  EXEC  PGM=IEFBR14
+//CREAT    DD  DSN=&NEWDS,
+//             LIKE=&OLDDS,
+//             DISP=(MOD,DELETE,DELETE),
+//             UNIT=SYSDA
+//*
+//**********************************************************************
+//* TO CREATE A FILE (PS/PDS) BY CLONING ATTRIBUTES OF ANOTHER FILE    *
+//**********************************************************************
+//*
+//STEP020  EXEC  PGM=IEFBR14
+//CREAT    DD  DSN=&NEWDS,
+//             LIKE=&OLDDS,
+//             DISP=(,CATLG,),
+//             UNIT=SYSDA
+//*
+//**********************************************************************
+//* TO COPY THE CONTENTS OF OLDDS TO NEWDS CREATED AT STEP010          *
+//**********************************************************************
+//*
+//STEP030  EXEC  PGM=SORT
+//SORTIN   DD DSN=&OLDDS,
+//         DISP=SHR
+//SORTOUT  DD DSN=&NEWDS,
+//         DISP=SHR
+//SYSIN    DD *
+ SORT FIELDS=COPY
+//SYSOUT   DD SYSOUT=*
+//*
+./       ADD   NAME=CMPUTE
+    PARSE ARG FORMULA
+    INTERPRET 'RESULT = ' FORMULA
+    IF SYSVAR('SYSISPF') = 'ACTIVE'
+       THEN DO
+            ZEDSMSG = RESULT
+            ZEDLMSG = FORMULA '==>' RESULT
+            'ISPEXEC SETMSG MSG(ISRZ001)'
+            END
+       ELSE SAY FORMULA '==>' RESULT
+./       ADD   NAME=COLS
+  TRACE O
+  DEFINE = MSG("OFF")
+  ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+  ADDRESS ISREDIT
+  "MACRO"
+  "(MACLVL) = MACRO_LEVEL"
+  IF MACLVL  =  001  THEN DO
+     COUNTER = 1
+     "(WIDTH) = DATA_WIDTH"
+     "(NUM1,NUM2) = NUMBER"
+     IF NUM1  =  "ON"  &  POS(" COBOL ",NUM2)  >  0  THEN DO
+        COUNTER = COUNTER + 6
+        WIDTH = WIDTH + 6
+     END
+      COLUMNS = ""
+      DO WHILE COUNTER <= WIDTH
+         IF RIGHT(COUNTER,1) = "0" THEN DO
+            COLUMNS = COLUMNS""LEFT(RIGHT(COUNTER,2),1)
+         END
+         ELSE DO
+            IF RIGHT(COUNTER,1) = "5" THEN
+               COLUMNS = COLUMNS"+"
+            ELSE
+               COLUMNS = COLUMNS"-"
+         END
+         COUNTER = COUNTER + 1
+      END
+      "LINE_BEFORE .ZCSR = INFOLINE '"COLUMNS"'"
+      "UP 1"
+   END
+    ELSE DO
+       ZEDLMSG = "%COLS CAN ONLY BE EXECUTED AS AN EDIT MACRO FROM",
+                 "AN EDIT SESSION."
+       ADDRESS ISPEXEC "SETMSG MSG(ISRZ000)"
+    END
+    EXIT
+./       ADD   NAME=CONCAT
+  /**************************** REXX *********************************/
+  /* THIS EXEC ADDS A DATA SET TO THE FRONT OF THE DATA SETS IN THE  */
+  /* SYSPROC CONCATENATION.                                          */
+  /* IT FINDS ALL DATA SETS CURRENTLY ALLOCATED TO SYSPROC, ADDS THE */
+  /* NEW DATA SET TO THE BEGINNING AND RE-ALLOCATES THE CONCATENATION*/
+  /* TO SYSPROC.                                                     */
+  /*******************************************************************/
+   ADDNAME = 'JONNALR.CLIST'
+
+   X = OUTTRAP('NAME.')/*BEGIN TRAPPING LINES OF OUTPUT FROM COMMANDS*/
+                   /* OUTPUT GOES TO VARIABLES BEGINNING WITH 'NAME.'*/
+
+   "LISTA ST"      /* LIST THE STATUS OF YOUR CURRENTLY ALLOCATIONS  */
+   FOUND = 'NO'    /* SET THE FOUND FLAG TO NO    */
+   I = 1           /* SET THE INDEX VARIABLE TO 1 */
+
+  /*******************************************************************/
+  /* LOOP THROUGH THE LINES OF TRAPPED COMMAND OUTPUT TO FIND LINES  */
+  /* 9 CHARACTERS LONG OR LONGER. CHECK THOSE LINES FOR THE WORD     */
+  /* SYSPROC UNTIL IT IS FOUND OR UNTIL ALL LINES HAVE BEEN CHECKED. */
+  /* IF SYSPROC IS FOUND, THE INDEX IS DECREASED ONE AND THE NAME OF */
+  /* THE FIRST DATA SET CONCATENATED TO SYSPROC IS STORED IN VARIABLE*/
+  /* "CONCAT".                                                       */
+  /*******************************************************************/
+   DO WHILE (FOUND = 'NO') & (I <= NAME.0)
+     IF LENGTH(NAME.I) >= 9 THEN
+       IF SUBSTR(NAME.I,3,7) = 'SYSPROC' THEN
+         DO
+           FOUND = 'YES'
+           I = I - 1
+           CONCAT = "'"NAME.I"'"
+         END
+       ELSE
+         I = I + 1
+      ELSE
+        I = I + 1
+    END
+    /*****************************************************************/
+    /* WHEN SYSPROC IS FOUND, LOOP THROUGH DATA SETS UNTIL ANOTHER   */
+    /* NAME IS ENCOUNTERED OR UNTIL ALL LINES ARE PROCESSED.  APPEND */
+    /* DATA SET NAMES TO THE ONE IN VARIABLE "CONCAT".               */
+    /*****************************************************************/
+    IF FOUND = 'YES' THEN
+      DO WHILE (I + 3) <= NAME.0
+        I = I + 3
+          IF SUBSTR(NAME.I,1,3) = '   ' THEN
+            DO
+              I = I - 1
+              CONCAT = CONCAT",'"NAME.I"'"
+            END
+          ELSE
+            I = NAME.0
+
+      END
+    ELSE NOP
+
+   /* ALLOCATE THE NEW CONCATENATION TO SYSPROC */
+   "ALLOC F(SYSPROC) DA('"ADDNAME"',"CONCAT") SHR REUSE"
+./       ADD   NAME=COPYSKEL
+ /*REXX*/
+ arg NEWDS OLDDS
+ if (NEWDS = '') then do
+    say "Missing New file name - to be created"
+    exit
+ end
+ if (OLDDS = '') then do
+    say "Missing Existing file name - to be cloned"
+    exit
+ end
+ /* Look at the current CLIST dataset for skeletons */
+ "ispexec libdef ispslib library id(sysexec)"
+ /* open the skeleton and output to temp dataset */
+ "ispexec ftopen temp"
+ "ispexec ftincl CLONEJOB"  /*DSCLONE is where the skeleton jcl lies*/
+ /* close the output */
+ "ispexec ftclose"
+ "ispexec vget (ztempf) shared"
+ /*submits JCL at temp dataset */
+ "submit '"ztempf"'"
+ exit
+./       ADD   NAME=COUNT
+/* REXX COUNT
+   TSO and/or ISPF ONLY
+   REXX command to count records if sequential,
+       count members if a pds
+
+   to use:
+   COUNT the-dataset-to-be-counted
+
+   IF INPUT IS SEQUENTIAL, COUNTS RECORDS
+   IF INPUT IS A PDS, COUNTS MEMBERS
+   NO OTHER TYPES OF INPUT WILL WORK.
+
+   FOR TSO/ISPF ONLY
+
+  for REXX information, Sample Code, books see
+
+                 HTTP://WWW.REXXFILES.COM
+
+
+
+  provided this entire comment is included
+
+*/
+
+ARG DSN  .
+IF DSN = "" THEN SIGNAL ADIOS
+
+SYSDSORG = ""
+CALL LISTDSI DSN "DIRECTORY" "RECALL"
+
+IF SYSDSORG = "PS" THEN DO
+  NAME_TO_COUNT = TRANSLATE(DSN," ","'")
+  NAME_TO_COUNT = SPACE(NAME_TO_COUNT,0)
+  "ALLOC DSN(*) DDN(SYSPRINT) REUSE"
+  "ALLOC DDN(INFILE) SHR REUSE DSN("DSN")"
+  "ALLOC DUMMY DDN(OUTFILE) REUSE  BLKSIZE(32000)"
+
+
+  CALL OUTTRAP "SYSPRINT." , "*"
+
+  "REPRO INFILE(INFILE) OUTFILE(OUTFILE) "
+  CALL OUTTRAP "OFF"
+
+  DO I = 1 TO SYSPRINT.0
+    /*SAY SYSPRINT.I*/
+    PARSE VAR SYSPRINT.I "WAS" RECORD_COUNT
+    IF DATATYPE(RECORD_COUNT) = "NUM" THEN LEAVE
+  END I
+
+  IF DATATYPE(SYSLRECL) = "NUM" THEN DO
+     SAY "RECORD COUNT  = " RECORD_COUNT
+     SAY "RECORD LENGTH = " SYSLRECL
+     SAY "BYTE COUNT    = " SYSLRECL * RECORD_COUNT
+     END
+
+  "ALLOC DDN(SYSIN) DSN(*) REUSE"
+  "ALLOC DDN(SYSPRINT) DSN(*) REUSE"
+  "FREE DDN(INFILE OUTFILE )"
+
+  EXIT
+  END /* FOR PS */
+
+IF SYSDSORG = "PO" THEN DO
+SAY SYSMEMBERS "MEMBERS IN PDS"
+EXIT
+END
+
+IF SYSDSORG = "VS" THEN DO
+SAY "CANNOT COUNT RECORDS IN VSAM DATASET"
+EXIT
+END
+
+ADIOS:
+SAY "COUNT WILL COUNT RECORDS IN A SEQUENTIAL FILE"
+SAY "OR MEMBERS IN A PDS"
+SAY "ANYTHING ELSE, CAN'T DO"
+SAY "REEXECUTE. PUT COUNT TO LEFT OF DSNAME ON ISPF 3.4 DSLIST"
+EXIT
+
+/***
+   may be freely distributed
+    provided that this notice is attached.
+    See WWW.REXXFILES.COM and
+    http://www.touniteamerica.com/programming/index.html
+    I am an independant consultant and trainer.
+    For information write to gabe1@touniteamerica.com
+***/
+./       ADD   NAME=CPROC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.CDM.PROC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.CDM.PROC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=CPROG
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.CDM')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.CDM("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=DB
+/* REXX */
+/*                                       */
+/* TRACE ?R */
+ADDRESS ISREDIT
+"MACRO"
+ /* ADDRESS ISPEXEC "CONTROL ERRORS RETURN"  */
+ /*                                                    */
+ /* THIS EDIT MACRO WILL DELETE ALL LINES FROM THE     */
+ /* LINE THE CURSOR IS ON TO THE BOTTOM LINE.          */
+ /*                                                    */
+  /***********************************************/
+  /*   BEGIN DB PROCESSING                       */
+  /***********************************************/
+  "ISREDIT (ROW,COL) = CURSOR"
+  "(LASTLN) = LINENUM .ZLAST"     /* LAST DATA LINE       */
+  IF ROW  = LASTLN THEN DO
+    ZEDSMSG = 'NEED AT LEAST 2 LINES'
+    ZEDLMSG = 'YOU MUST DELETE AT LEAST 2 LINES IN THE FILE',
+              'TO EXECUTE THE DB EDIT MACRO.'
+    ADDRESS ISPEXEC "SETMSG MSG(ISRZ001)"  /* MSG - WITH ALARM */
+    EXIT 12
+  END
+  "ISREDIT LABEL " ROW "= .FROM"
+  "ISREDIT LABEL " LASTLN "= .TO"
+  "DELETE ALL .FROM .TO"  /* DELETE LABELED LINES */
+  /***********************************************/
+  /*   END DB PROCESSING                         */
+  /***********************************************/
+  COUNT = LASTLN - ROW + 1
+  ZEDSMSG = COUNT 'LINES DELETED'
+  ZEDLMSG = COUNT 'LINES WERE DELETED FROM THE CURSOR LINE' ,
+                 'TO THE BOTTOM LINE.'
+  ADDRESS ISPEXEC "SETMSG MSG(ISRZ000)"  /* MSG - NO ALARM */
+  EXIT 0
+./       ADD   NAME=DB2REXX
+//JONNALR1 JOB (TEST,DEV),'RAMA  JON-2166',CLASS=F,MSGCLASS=X,
+//             REGION=8M,NOTIFY=JONNALR,TYPRUN=SCAN
+/*JOBPARM SYSAFF=TOYB
+//JOBLIB    DD DSN=TEST.BATCH.LOAD,DISP=SHR
+//          DD DSN=PROD.BATCH.LOAD,DISP=SHR
+//*
+//***************************************************************
+//*  DB2/REXX SAMPLE PROGRAM                                    *
+//***************************************************************
+//DB2REXX   EXEC PGM=IKJEFT01,PARM='DB2EXEC DB2T'
+//STEPLIB  DD    DSN=SYS1.DB2T.SDSNLOAD,DISP=SHR
+//SYSEXEC  DD    DSN=your.rexx.pds,DISP=SHR
+//SYSTSPRT DD    SYSOUT=*
+//SYSTSIN  DD   DUMMY
+/*********************************************************************/
+/*    REXX                                                           */
+/*********************************************************************/
+/*  Purpose: Sample DB2/REXX                                         */
+/*-------------------------------------------------------------------*/
+/*  Syntax:  db2exec ssid isolation                                  */
+/*-------------------------------------------------------------------*/
+/*  Parms: ssid       - DB2 Subsystem ID                             */
+/*        isolation  - DB2 Isolation  level                          */
+/*                                                                   */
+/* Notes: RC       00 - OK                                           */
+/*                12 -  Missing SSID                                 */
+/*     20 - DSNREXX Initialization  error                            */
+/*                24 - DSNREXX  Termination error                    */
+/*                    */
+/*********************************************************************/
+/*   Change  Log                                                     */
+/*                                                                   */
+/*   Author       Date      Reason                                   */
+/*  --------     ---------  -----------------------------------------*/
+/*  R.  Zenuk    Apr 2004   Initial Creation                         */
+/*                                                                   */
+/*********************************************************************/
+/*  Accept SSID and isolation level (default is UR)                  */
+arg  ssid isolation
+if ssid = '' then exit(12)
+if isolation = '' then isolation  =  'UR'
+/*********************************************************************/
+/*  Initialize the REXX/SQL interface                                */
+/*********************************************************************/
+if  rxsubcom('ADD','DSNREXX','DSNREXX') <> 0 then  exit(20)
+/*********************************************************************/
+/*  Connect                                                          */
+/*********************************************************************/
+if  execcmd("CONNECT" ssid) = 0 then say 'Connected to'  ssid
+/*********************************************************************/
+/*  Set isolation level                                              */
+/*********************************************************************/
+call  execsql "SET CURRENT  PACKAGESET='DSNREX"isolation"'"
+/*********************************************************************/
+/*  Declare the cursor                                               */
+/*********************************************************************/
+call  execsql "DECLARE C1 CURSOR FOR  S1"
+/*********************************************************************/
+/*  Prepare the statement                                            */
+/*********************************************************************/
+/*  dbname = 'ACCDB001'                                              */
+/* sql = "SELECT * FROM SYSIBM.SYSCOPY WHERE DBNAME =  '"dbname"'"   */
+sql = "SELECT DBNAME, TSNAME, DSNAME, DSVOLSER FROM  SYSIBM.SYSCOPY"
+call execsql "PREPARE S1 FROM  :SQL"
+/*********************************************************************/
+/*  Open the cursor                                                  */
+/*********************************************************************/
+call  execsql "OPEN C1"
+rowcount =  0
+/*********************************************************************/
+/*  Fetch loop                                                       */
+/*********************************************************************/
+do  forever
+call execsql "FETCH C1 INTO :DBNAME, :TSNAME, :DSNAME,  :DSVOLSER"
+if sqlcode = 100 then leave
+rowcount = rowcount + 1
+say dbname tsname dsname  dsvolser
+end
+say rowcount 'rows  retrieved'
+/*********************************************************************/
+/*  Close the cursor                                                 */
+/*********************************************************************/
+call  execsql "CLOSE  C1"
+/*********************************************************************/
+/*  Disconnect                                                       */
+/*********************************************************************/
+call  execcmd "DISCONNECT"  ssid
+/*********************************************************************/
+/*  Unload the REXX/SQL interface                                    */
+/*********************************************************************/
+if  rxsubcom('DELETE','DSNREXX','DSNREXX') <> 0 then exit(24)
+exit  0
+/*********************************************************************/
+/*  DSNREXX Commands                                                 */
+/*********************************************************************/
+execcmd:  arg sqlstmt
+address DSNREXX  sqlstmt
+return  sqlcode
+/*********************************************************************/
+/*  DSNREXX EXECSQL Commands                                         */
+/*********************************************************************/
+execsql:  arg sqlstmt
+address DSNREXX 'EXECSQL'  sqlstmt
+return sqlcode
+./       ADD   NAME=DCLIST
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.BATCH.CLIST')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.BATCH.CLIST("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=DCNTL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('DEVT.BATCH.CNTL')"
+   EXIT
+   END
+
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('DEVT.BATCH.CNTL("MEMNAME")')"
+   EXIT
+   END
+
+./       ADD   NAME=DCOB
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.BATCH.COBOL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.BATCH.COBOL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=DCOPY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('DEVT.BATCH.COPY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('DEVT.BATCH.COPY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=DEX
+/* Rexx dex- QuickDelete */
+Address ISPEXEC
+'CONTROL ERRORS RETURN'
+Address ISREDIT
+
+   Address tso "DEL 'jonnalr.extract'"
+   Address ISPEXEC "rempop all"
+Exit
+./       ADD   NAME=DJCL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('DEVT.BATCH.JCL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('DEVT.BATCH.JCL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=DPROC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.BATCH.PROC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.BATCH.PROC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=ECAT
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.NOTES(ECAT)')"
+./       ADD   NAME=EPC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.EPC.NEW')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.EPC.NEW("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=ERRM1
+/* rexx */
+trace o
+/*--------------------------------------------------------------------*/
+/* signal some errors                                                 */
+/*--------------------------------------------------------------------*/
+SIGNAL ON FAILURE NAME Error_Routine             /* set the erro      */
+SIGNAL ON HALT    NAME Exit_Routine              /* routine           */
+SIGNAL ON SYNTAX  NAME Error_Routine             /*                   */
+parse source . . name . . . env .                /* get rexx name     */
+address ispexec "control errors return"          /*                   */
+/*--------------------------------------------------------------------*/
+/* the main process                                                   */
+/*--------------------------------------------------------------------*/
+...
+/*--------------------------------------------------------------------*/
+/* error_routine                                                      */
+/*--------------------------------------------------------------------*/
+Error_Routine:                                   /*                   */
+ TRACE "OFF"                                     /* switch off traces */
+ SIGNAL OFF FAILURE                              /* prevent recursion */
+ SIGNAL OFF HALT                                 /*                   */
+ SIGNAL OFF NOVALUE                              /*                   */
+ SIGNAL OFF SYNTAX                               /*                   */
+ cond = CONDITION("C")                           /* get error name    */
+ emsg = CONDITION("D")                           /* get errer descr.  */
+ select                                          /* if                */
+  when cond = "NOVALUE" then                     /* name not available*/
+   rc = "N/A"                                    /* not initialized   */
+  when cond = "SYNTAX" then                      /* if systax error   */
+   emsg = ERRORTEXT(rc)                          /* get message       */
+  otherwise nop                                  /*                   */
+ end                                             /*                   */
+ parse SOURCE . . name .                         /* get rexx name     */
+ say ""                                          /*                   */
+ say name "durch unerwarteten Fehler abgebrochen"/*                   */
+ say ""                                          /*                   */
+ say "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+ say "+++" name "abgebrochen. RC=" !! RC
+ say "+++ Typ= '" !! emsg !! "'"
+ say "+++ Line (" !! sigl !! ")= '" !! SOURCELINE(sigl) !! "'"
+ say "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+ call Exit_Routine -99 "ERROR"                   /* leave rexx        */
+/*--------------------------------------------------------------------*/
+/* exit routine                                                       */
+/*--------------------------------------------------------------------*/
+Exit_routine:
+PARSE ARG ec funct
+if ec='' then ec=0
+EXIT ec
+./       ADD   NAME=FACT1
+/* Rexx  */
+  do n=1 to 10
+    call factorial n
+    say 'The factorial of' n 'is:' RESULT
+    end
+  return
+  factorial : procedure
+    n = arg(1)
+    if n = 1 then
+      return 1
+    return n * factorial( n - 1 )
+./       ADD   NAME=FDEF
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('PROD.PPFA.FORMDEF')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('PROD.PPFA.FORMDEF("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=FILEA1
+/* rexx */
+/* Exec Name:    SORTCNTL                                            */
+/* Date Written: 02/25/1999                                          */
+/* Author:       Bruce R. Gillispie                                  */
+/* Description:  Generate control cards for Sort                     */
+/* Notice the adate function, it subtracts "nd" days from today      */
+/*
+! Disclaimer:
+! The "SORTCNTL" utility IS NOT in the Public Domain Freeware Software.
+! You may use this utility AT YOUR OWN RISK, it is provided for your
+! enjoyment and neither the Author or his Employer provides any
+! warranty for its use.
+/*
+/*-------------------------------------------------------------------*/
+ signal on error                              /* catch all routine   */
+ nd = '14'      /* number of days to subtract from today  */
+ cntl_recs.1 = "   RECORD TYPE=F                           "
+ cntl_recs.2 = "   INCLUDE COND=(39,8,CH,LT,C'"adate(nd)"',"
+ cntl_recs.3 = "                 AND,64,1,CH,NE,C'S',      "
+ cntl_recs.4 = "                 AND,8,3,CH,NE,C'005')     "
+ cntl_recs.5 = "   SORT FIELDS=(39,8,CH,A),STOPAFT=800     "
+ cntl_recs.6 = "   OUTREC FIELDS=(17:1,6,                  "
+ cntl_recs.7 = "                  24:57X'40')              "
+  cntl_recs.0 = "7"                    /* how many sort statements */
+  wkname      = "TESTALL.STK.SORTCNTL"; /* output data             */
+ /*              ....5....+....5....+....5....+....5....+....5.... */
+ call alloc_wrkfile
+ call write_cntl_recs
+ call close_work_file
+ call free_work_file
+ exit 00
+ /*
+ /* call display_job                        used for development   */
+ /* call delete_work_file                   used for development   */
+ /* \\\\\\\\\\\\\\\\\\\ called routines below ///////////////////// */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /* Write Sort Control Statement                                      */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ write_cntl_recs:
+  do i = 1 to cntl_recs.0
+   queue cntl_recs.i
+ "execio 1 diskw $TMPFLE$";
+  end i
+ return retcode;
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /* Close Work file                                                   */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ close_work_file:
+ "execio 0 diskw $TMPFLE$ (FINIS";
+ return retcode;
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /* Free Work file                                                    */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ free_work_file:
+ Address 'TSO' 'FREE F($TMPFLE$)'
+ return retcode;
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /* adate Function: Subtract/Add ARG "nd" from todays date...        */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ adate: procedure expose yyyy mm dd ARG nd
+ parse value date('S') with yyyy +4 mm +2 dd +2;      /* todays date */
+ /* --------------------------------------------------------------   */
+ /* Special thanks to H. D. Knoble for making the Flandern date      */
+ /* routines available.                                              */
+ /* H. D. Knoble, hdk@psu.edu                                        */
+ /* Penn State Center for Academic Computing  - November 1985.       */
+ /* ---------------------------------------------------------------- */
+ /* Convert calendar date to julian date                             */
+ /* See CACM 1968 11(10):657, authors: Fliegal and Van Flandern      */
+ /* ---------------------------------------------------------------- */
+ jd = dd-32075+1461*(yyyy+4800+(mm-14)%12)%4+367*(mm-2-((mm-14)%12),
+      *12)%12-3*((yyyy+4900+(mm-14)%12)%100)%4 ;
+ /* ---------------------------------------------------------------- */
+ jd=nd+jd; /* apply plus or minus value "nd" to julian date "jd"*/
+ /* ---------------------------------------------------------------- */
+ /* Convert julian date to calender date, as yyyy mm dd              */
+ /* See CACM 1968 11(10):657, authors: Fliegal and Van Flandern      */
+ /* ---------------------------------------------------------------- */
+ v=jd+68569; n=4*v%146097;
+ v=v-(146097*n+3)%4; yyyy=4000*(v+1)%1461001;
+ v=v-1461*yyyy%4+31; mm=80*v%2447; dd=v-2447*mm%80;
+ v=mm%11; mm=mm+2-12*v; yyyy=100*(n-49)+yyyy+v;
+ /* ---------------------------------------------------------------- */
+ if mm <10 then mm=0||mm;              /* add leading zero if needed */
+ if dd <10 then dd=0||dd;              /* add leading zero if needed */
+ return yyyy||mm||dd;                  /* return in Standard format  */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /*  Allocate Work file                                               */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ alloc_wrkfile:
+   Address 'TSO'
+     "ALLOC NEW CAT F($TMPFLE$) DSO(PS) SP(1,1) CYL "||,
+     "DA('" || wkname || "') REUSE "||,
+     "RECFM(F) BLKSIZE(0) LRECL(80) UNIT(SYSALLDA)";
+  retcode = rc;                             /* Save the return code
+ */
+  if retcode <> 0                           /* Did it work ??
+ */
+     then do;                               /*     no, tell them
+ */
+             Say "Allocation failed with rc=" retcode;
+             Say "For the Temp Work File";
+             exit 888
+             return retcode;
+             end;
+ return retcode;
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /* Display Job using Library Services                                */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ display_job:
+ "ISPEXEC LMINIT DATAID(LMID) DDNAME($TMPFLE$)"
+ "ISPEXEC browse DATAID(&LMID)"
+ "ISPEXEC LMFREE DATAID(&LMID)"
+ return retcode;
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /* Free and Delete Work file                                         */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ delete_work_file:
+ Address 'TSO' 'FREE F($TMPFLE$) DELETE'
+ return retcode;
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /* Signal On Error Routine                                           */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ error:
+ say '----------------------------------------------------------- '
+ say ' The return code from the command on line' SIGL 'is:' RC
+ say '----------------------------------------------------------- '
+ call close_work_file
+ call delete_work_file
+ exit 13;
+ return retcode;
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+ /* End of exec...                                                    */
+ /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+./       ADD   NAME=FNOT
+/* REXX                                                             */
+/*                                                                  */
+/*                                                                  */
+/*                                                                  */
+/*  THIS MACRO FINDS LINES WITH VARIABLE X AND NOT WITH VARIABLE Y  */
+/*                                                                  */
+/*  E.G. FNOT PERFORM THRU                                          */
+/*       (WILL FIND  A LINE WITH THE WORD "PERFORM" AND             */
+/*        NOT WITH THE WORD "THRU")                                 */
+/*                                                                  */
+"ISREDIT MACRO (@X @Y) NOPROCESS       "
+
+IF (@X = '') & (@Y = '') THEN
+   DO
+     "ISPEXEC VGET (@X) SHARED"
+     "ISPEXEC VGET (@Y) SHARED"
+   END
+
+IF (@X = '') & (@Y = '') THEN
+   DO
+     SAY 'NO VARIABLES ENTERED'
+     SAY 'FNOT MACRO TERMINATED '
+     EXIT
+   END
+
+@X = TRANSLATE(@X)
+@Y = TRANSLATE(@Y)
+
+"ISPEXEC VPUT (@X) SHARED"
+"ISPEXEC VPUT (@Y) SHARED"
+
+ @LX = LENGTH(@X)
+ @LY = LENGTH(@Y)
+
+"ISREDIT (@LASTONE) = LINENUM" .ZLAST
+"ISREDIT (@CURLINE) = LINENUM" .ZCSR
+ @FOUND = N
+ @CURLINE = @CURLINE + 2
+
+DO WHILE @CURLINE !> @LASTONE
+   "ISREDIT (@LV) = LINE" @CURLINE
+   @LV = TRANSLATE(@LV)
+   @S1 = INDEX(@LV,SUBSTR(@X,1,@LX))
+   @S2 = INDEX(@LV,SUBSTR(@Y,1,@LY))
+   IF (@S1 > 0) & (@S2 !> 0) THEN
+     DO
+        @FOUND = Y
+        ZPF13 = FNOT
+        "ISPEXEC VPUT (ZPF13) PROFILE"
+         @MSG = 'FOUND LINE WITH' @X ' AND NOT WITH ' @Y
+         ZEDLMSG = @MSG
+        "ISPEXEC SETMSG MSG(ISRZ001)"
+        "ISREDIT LOCATE" @CURLINE
+        "ISREDIT UP 1"
+         LEAVE
+     END
+   @CURLINE = @CURLINE + 1
+END
+IF @FOUND = N THEN
+   DO
+      ZEDLMSG = "LITERAL NOT FOUND"
+      "ISPEXEC SETMSG MSG(ISRZ001)"
+   END
+EXIT
+./       ADD   NAME=FR1
+/* rexx */
+Arg Rexx Func .
+
+Signal On Failure
+Signal On Syntax
+Signal On Novalue
+
+Call Main_Routine
+
+Return
+/*-------------------------------------------------------------------*/
+/*- handle any problems encountered                                 -*/
+/*-------------------------------------------------------------------*/
+Failure: Say "Failure occured on line" Sigl; Call Cleanup; Exit(12);
+Syntax:  Say "Syntax error on line"    Sigl; Call Cleanup; Exit(12);
+Novalue: Say "Novalue used on line"    Sigl; Call Cleanup; Exit(12);
+Cleanup:
+Return
+/*-------------------------------------------------------------------*/
+/*- This will find a Rexx in the sysproc/sysexec allocated libs.    -*/
+/*-------------------------------------------------------------------*/
+Main_Routine:
+
+If Length(Rexx) = 1 Then Do
+  Func = Rexx
+  Rexx = ''
+End
+
+/* if the rexx was not passed get it from the cursor */
+If Rexx = '' Then Do
+  Address ISPEXEC
+  GETLINE = ''
+  "VPUT GETLINE SHARED"
+  "SELECT CMD(%GETLINE)"
+  "VGET (CSR CSRP LINE SCRW PANEL) SHARED"
+  UpperLine = Line
+  Upper UpperLine
+  CmdPos = Pos('COMMAND',UpperLine)
+  If CmdPos = 0 | CmdPos > 3 Then Do
+    Do While CSRP > 1
+      If Substr(Line,CSRP-1,1) = ' ' Then Leave
+      CSRP = CSRP - 1
+    End
+    Rexx = Word(Substr(Line,CSRP),1)
+  End
+  Address TSO
+End
+Rexx = Translate(Rexx,,'%"()')
+Rexx = Translate(Rexx,,"'")
+Rexx = Strip(Rexx)
+
+/* still can't find it, ask the user to supply one */
+If Rexx = '' Then Do
+  Say 'Enter the Rexx/Clist name you want to find...'
+  Pull Rexx
+End
+If Rexx = '' Then Do
+  Say 'Rexx/Clist name is missing.'
+  Return
+End
+
+/* get a list of possible libs to edit */
+Edit.0 = 0
+Call LoadConcat
+If Edit.0 = 0 Then Do
+  Say 'Rexx/Clist' Rexx 'not found.'
+  Return
+End
+
+/* if we found only one lib, go func it */
+If Edit.0 = 1 Then Do
+  Dsn = Word(Edit.1,1) || "(" || Rexx || ")"
+  Call FDSN "'"Dsn"'" Func
+  Return
+End
+
+/* let the user choose which one to edit */
+Say Rexx 'was found in the following Rexx/Clist libraries...'
+Do iEdit = 1 To Edit.0
+  Say iEdit Edit.iEdit
+End
+Say 'Reply with a valid library number, or anything else to quit.'
+Pull Reply
+Reply = Strip(Reply)
+If Datatype(Reply,'N') = 1 & Reply > 0 & Reply <= Edit.0 Then Do
+  Dsn = Word(Edit.Reply,1) || "(" || Rexx || ")"
+  Call FDSN "'"Dsn"'" Func
+End
+
+Return
+/*-------------------------------------------------------------------*/
+/*- check to see if the dsn(member) exists and add it to our list   -*/
+/*-------------------------------------------------------------------*/
+CheckDsn:
+
+Arg Dsn DD .
+CheckDsn = "'" || Dsn || "(" || Rexx || ")'"
+If SYSDSN(CheckDsn) <> 'OK' Then Return
+iEdit = Edit.0
+iEdit = iEdit + 1
+Edit.iEdit = Overlay(DD,Dsn,50)
+Edit.0 = iEdit
+
+Return
+/*-------------------------------------------------------------------*/
+/*- go thru the sysproc/sysexec concatenations                      -*/
+/*-------------------------------------------------------------------*/
+LoadConcat:
+
+x = Outtrap('Dsn.')
+"LISTA STATUS"
+x = Outtrap('OFF')
+
+OldDD = ''
+Do iDsn = 1 To Dsn.0
+  Dsn = Dsn.iDsn
+  If Left(Dsn,1) = '-' Then Iterate
+  If Left(Dsn,1) = ' ' Then Iterate
+  If Pos('(',Dsn) > 0 Then Iterate /* for pds(mem) allocations */
+  Dsn = Strip(Dsn)
+
+  /* we know we'er working with a dataset now. */
+  /* look ahead to see if there's a dd.        */
+  iDD = iDsn + 1
+  DD = Dsn.iDD
+  Parse Var DD DD 'KEEP'
+  DD = Strip(DD)
+  If Words(DD) > 1 Then Iterate
+
+  Select
+    When DD = 'SYSEXEC' Then OldDD = DD  /* we're interested */
+    When DD = 'SYSPROC' Then OldDD = DD
+    When DD <> '' Then OldDD = ''        /* not interested */
+    Otherwise Nop
+  End
+  /* OldDD is something, so add it to our list */
+  If OldDD <> '' Then Call CheckDsn Dsn OldDD
+End
+
+Return
+/* sample output from the lista status command */
+--DDNAME---DISP--
+MA133.TSO.PROD.SYSEXEC
+  SYSEXEC  KEEP
+SYS2.UTIL.REXX
+           KEEP
+SYS9.CYFUSION.EXECS
+           KEEP
+SYS9.SOFTPUB.EXEC
+           KEEP
+SYS9.XMITIP.NEW.EXEC
+           KEEP
+SYS1.SBPXEXEC
+           KEEP
+SYS9.CAI.OPSMVS.REXX
+           KEEP
+FFST.V120ESA.SEPWSRC1
+           KEEP
+./       ADD   NAME=F1
+/* REXX                                                        */
+/*                                                             */
+/*                                                             */
+/*                                                             */
+/*  THIS MACRO FINDS LINES WITH ANY OF THE 4 VARIABLES ENTERED */
+/*  YOU CAN ENTER 1, 2, 3 OR 4 VARIABLES                       */
+/*                                                             */
+/*  E.G. F1 MOVE PERFORM                                       */
+/*       (WILL FIND A LINE WITH THE WORD "MOVE" OR "PERFORM"   */
+/*       AFTER ENTERING THIS YOU CAN JUST PRESS PF13 TO REPEAT */
+/*       FIND THE SAME VARIABLES OR ENTER F1 WITH NO           */
+/*       VARIABLES TO CONTINUE SEARCHING FOR THE ORIGINAL      */
+/*       VARIABLES ENTERED.                                    */
+/*                                                             */
+/***************************************************************/
+"ISREDIT MACRO (@A @B @C @D) NOPROCESS        "
+/*                                                             */
+IF (@A = '') & (@B = '') &(@C = '') & (@D = '' ) THEN
+   DO
+     "ISPEXEC VGET (@A) SHARED"
+     "ISPEXEC VGET (@B) SHARED"
+     "ISPEXEC VGET (@C) SHARED"
+     "ISPEXEC VGET (@D) SHARED"
+   END
+
+IF (@A = '') & (@B = '') &(@C = '') & (@D = '' ) THEN
+   DO
+     SAY 'NO VARIABLES ENTERED'
+     SAY 'F1 MACRO TERMINATED '
+     EXIT
+   END
+
+"ISPEXEC VPUT (@A) SHARED"
+"ISPEXEC VPUT (@B) SHARED"
+"ISPEXEC VPUT (@C) SHARED"
+"ISPEXEC VPUT (@D) SHARED"
+
+@A = TRANSLATE(@A)
+@B = TRANSLATE(@B)
+@C = TRANSLATE(@C)
+@D = TRANSLATE(@D)
+
+/*                                                         */
+"ISREDIT (@LASTONE) = LINENUM" .ZLAST
+"ISREDIT (@CURLINE) = LINENUM" .ZCSR
+
+ @LA = LENGTH(@A)
+ @LB = LENGTH(@B)
+ @LC = LENGTH(@C)
+ @LD = LENGTH(@D)
+
+@FOUND = N
+@CURLINE = @CURLINE + 2
+
+DO WHILE @CURLINE ¼> @LASTONE
+   "ISREDIT (@LV) = LINE" @CURLINE
+   @LV = TRANSLATE(@LV)
+   @SA = INDEX(@LV,SUBSTR(@A,1,@LA))
+
+   IF @B = '' THEN
+      @SB = 0
+   ELSE;
+     DO
+        @SB = INDEX(@LV,SUBSTR(@B,1,@LB))
+     END
+
+   IF @C = '' THEN
+      @SC = 0
+   ELSE;
+     DO
+        @SC = INDEX(@LV,SUBSTR(@C,1,@LC))
+     END
+
+   IF @D = '' THEN
+      @SD = 0
+   ELSE;
+     DO
+        @SD = INDEX(@LV,SUBSTR(@D,1,@LD))
+     END
+
+   IF (@SA > 0) | (@SB > 0) | (@SC > 0) | (@SD > 0) THEN
+     DO
+         @FOUND = Y
+         ZPF13 = F1
+        "ISPEXEC VPUT (ZPF13) PROFILE"
+         @MSG = 'FOUND'
+         IF @SA > 0 THEN
+            @MSG = @MSG @A
+         IF @SB > 0 THEN
+            @MSG = @MSG  @B
+         IF @SC > 0 THEN
+            @MSG = @MSG  @C
+         IF @SD > 0 THEN
+            @MSG = @MSG  @D
+         @MSG = @MSG '    ('@A  @B  @C  @D')'
+         ZEDLMSG = @MSG
+         "ISPEXEC SETMSG MSG(ISRZ001)"
+        "ISREDIT LOCATE" @CURLINE
+        "ISREDIT UP 1"
+         LEAVE
+     END
+   @CURLINE = @CURLINE + 1
+END
+
+IF @FOUND = N THEN
+   DO
+      ZEDLMSG = "LITERALS NOT FOUND"
+      "ISPEXEC SETMSG MSG(ISRZ001)"
+   END
+./       ADD   NAME=F3
+/*****************************************************************/
+/* REXX                                                          */
+/*                                                               */
+/*                                                               */
+/*                                                               */
+/*  THIS MACRO FINDS LINESWITH VARIABLE @X AND VARIABLE @Y       */
+/*                         AND VARIABLE @Z                       */
+/*                                                               */
+/*  THIS MACRO FINDS LINES WITH ALL OF THE 3 VARIABLES ENTERED   */
+/*  YOU CAN ENTER 1, 2, OR 3 VARIABLES                           */
+/*                                                               */
+/*  E.G. F3   THRU PERFORM                                       */
+/*       (WILL FIND  A LINE WITH THE WORDS "THRU" AND "PERFORM"  */
+/*                                     AND "EXIT"                */
+/*       AFTER ENTERING THIS YOU CAN JUST PRESS PF13 TO REPEAT   */
+/*       FIND THE SAME VARIABLES OR ENTER F3 WITH NO             */
+/*       VARIABLES TO CONTINUE SEARCHING FOR THE ORIGINAL        */
+/*       VARIABLES ENTERED.                                      */
+/*****************************************************************/
+
+"ISREDIT MACRO (@X @Y @Z) NOPROCESS    "
+
+
+IF (@X = "") & (@Y = "") & (@Z = "") THEN
+   DO
+     "ISPEXEC VGET (@X) SHARED"
+     "ISPEXEC VGET (@Y) SHARED"
+     "ISPEXEC VGET (@Z) SHARED"
+   END
+
+IF (@X = '') & (@Y = '') & (@Z = '') THEN
+   DO
+     SAY 'NO VARIABLES ENTERED'
+     SAY 'F3 MACRO TERMINATED '
+     EXIT
+   END
+
+"ISPEXEC VPUT (@X) SHARED"
+"ISPEXEC VPUT (@Y) SHARED"
+"ISPEXEC VPUT (@Z) SHARED"
+
+@X = TRANSLATE(@X)
+@Y = TRANSLATE(@Y)
+@Z = TRANSLATE(@Z)
+
+"ISREDIT (@LASTONE) = LINENUM" .ZLAST
+"ISREDIT (@CURLINE) = LINENUM" .ZCSR
+
+ @LX = LENGTH(@X)
+ @LY = LENGTH(@Y)
+ @LZ = LENGTH(@Z)
+@FOUND = Y
+@CURLINE = @CURLINE + 2
+
+DO WHILE @FOUND = 'Y'
+   "ISREDIT FIND " @X
+   IF RC = 0 THEN
+      DO
+         "ISREDIT (@CURLINE) = LINENUM" .ZCSR
+         "ISREDIT (@LV) = LINE" @CURLINE
+          @LV = TRANSLATE(@LV)
+          IF @Y = '' THEN
+             @S2 = 0
+          ELSE;
+            DO
+               @S2 = INDEX(@LV,SUBSTR(@Y,1,@LY))
+/*             SAY 'LV  ' @LV
+               SAY ' S2 ' @S2 */
+            END
+          IF @Z = '' THEN
+             @S3 = 0
+          ELSE;
+            DO
+               @S3 = INDEX(@LV,SUBSTR(@Z,1,@LZ))
+            END
+
+/*        SAY ' S2 ' @S2 'Y ' @Y ' S3 ' @S3 ' Z ' @Z */
+          IF (((@S2 > 0) | (@Y = ''))  & ,
+             ((@S3 > 0) | (@Z = ''))) THEN
+            DO
+               @FOUND = Y
+               ZPF13 = F3
+               "ISPEXEC VPUT (ZPF13) PROFILE"
+                @MSG = 'FOUND'
+                @MSG = @MSG  @X
+                IF @S2 > 0 THEN
+                   @MSG = @MSG  @Y
+                IF @S3 > 0 THEN
+                   @MSG = @MSG  @Z
+                ZEDLMSG = @MSG
+               "ISPEXEC SETMSG MSG(ISRZ001)"
+               "ISREDIT LOCATE" @CURLINE
+               "ISREDIT UP 1"
+                LEAVE
+            END
+      END
+   ELSE
+    @FOUND = N
+END
+IF @FOUND = N THEN
+   DO
+      ZEDLMSG = "LITERALS NOT FOUND"
+      "ISPEXEC SETMSG MSG(ISRZ001)"
+   END
+EXIT
+./       ADD   NAME=G2J
+ PARSE UPPER ARG DATE
+ IF DATE = '' THEN RET_DATE = 0
+ ELSE
+ RET_DATE = G2J_PROC(DATE)
+ SAY 'GREG ' DATE ' IS ' 'JULIAN ' RET_DATE
+ RETURN 0
+
+ G2J_PROC: PROCEDURE
+
+ PARSE ARG GEO_DATE
+ PARSE VAR GEO_DATE MM '/' DD '/' YYYY
+ J_DATE = 0
+
+ IF DATATYPE(MM)   ¬= 'NUM' | ,
+    DATATYPE(DD)   ¬= 'NUM' | ,
+    DATATYPE(YYYY) ¬= 'NUM' | ,
+    DD > 31                 | ,
+    MM < 1                  | ,
+    MM > 12                 | ,
+    YYYY > 9999          THEN ,
+       SAY 'DT001E - INVALID GREGORIAN DATE AS' GEO_DATE
+ ELSE DO
+    MO.1  = 31
+    MO.2  = 28
+    MO.3  = 31
+    MO.4  = 30
+    MO.5  = 31
+    MO.6  = 30
+    MO.7  = 31
+    MO.8  = 31
+    MO.9  = 30
+    MO.10 = 31
+    MO.11 = 30
+    MO.12 = 31
+    IF LEAP_YEAR(YYYY) THEN MO.2 = 29
+    MM = STRIP(MM,'L','0')
+    IF (DD > VALUE(MO.MM)) THEN ,
+        SAY 'DT002E - OUT-OF-RANGE DATE AS' GEO_DATE
+    ELSE DO
+       J_ACCUM_DAY = 0
+       IF MM > 1 THEN DO I=1 TO (MM-1)
+          J_ACCUM_DAY = J_ACCUM_DAY + MO.I
+          END
+       J_ACCUM_DAY = J_ACCUM_DAY + DD
+       J_DATE      = YYYY||RIGHT(J_ACCUM_DAY,3,'0')
+       END
+    END
+
+ RETURN J_DATE
+
+ LEAP_YEAR: PROCEDURE
+ PARSE ARG YEAR_CHECKED
+
+ IF (YEAR_CHECKED // 100) = 0 THEN ,
+    IF (YEAR_CHECKED // 400) = 0 THEN LEAP_YEAR_FLAG = 1
+    ELSE LEAP_YEAR_FLAG = 0
+ ELSE IF (YEAR_CHECKED // 4) = 0 THEN LEAP_YEAR_FLAG = 1
+    ELSE LEAP_YEAR_FLAG = 0
+
+ RETURN LEAP_YEAR_FLAG
+./       ADD   NAME=JC
+   /** REXX - INSERT SORT STEP JCL **/
+
+      SAVEMSG = MSG()
+      X = MSG("OFF")
+      X = ADDRESS()
+      SUBCOM ISPEXEC
+      IF RC <> 0 THEN DO
+         SAY "IE MUST BE RUN UNDER ISPF EDIT!"
+         SIGNAL QUIT
+         END
+      SUBCOM ISREDIT
+      UMODE = "ISREDIT"
+      ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+      ADDRESS ISREDIT
+      "MACRO (PARM) NOPROCESS"
+
+      ADDRESS ISREDIT
+    REC = "//JCLPROC   JCLLIB ORDER=DEVT.LAWSON.PROCLIB"
+      "LINE_AFTER 0 = (REC)"
+    REC = "//          DD DSN=PROD.BATCH.LOAD,DISP=SHR"
+      "LINE_AFTER 0 = (REC)"
+    REC = "//JOBLIB    DD DSN=TEST.BATCH.LOAD,DISP=SHR"
+      "LINE_AFTER 0 = (REC)"
+    REC = "/*JOBPARM SYSAFF=TOYB"
+      "LINE_AFTER 0 = (REC)"
+    REC = "//             REGION=8M,NOTIFY=JONNALR,TYPRUN=SCAN"
+      "LINE_AFTER 0 = (REC)"
+   REC = "//JONNALR1 JOB (TEST,DEV),'RAMA
+  JON-2166',CLASS=F,MSGCLASS=X,"
+      "LINE_AFTER 0 = (REC)"
+      RETURN(0)
+
+./       ADD   NAME=J2G
+ PARSE UPPER ARG DATE
+ IF DATE = '' THEN RET_DATE = 0
+ ELSE
+ RET_DATE = J2G_PROC(DATE)
+ SAY 'JULIAN ' DATE ' IS ' 'GREG '  RET_DATE
+ RETURN 0
+
+ J2G_PROC: PROCEDURE
+
+ PARSE ARG JUL_DATE
+
+ CALL VALIDATE_JULIAN
+ IF RESULT = 0 THEN G_DATE = 0
+ ELSE DO
+    JULIAN_YYYY = SUBSTR(JUL_DATE,1,4)
+    JULIAN_DDD  = SUBSTR(JUL_DATE,5,3)
+    MO.1  = 31
+    MO.2  = 28
+    MO.3  = 31
+    MO.4  = 30
+    MO.5  = 31
+    MO.6  = 30
+    MO.7  = 31
+    MO.8  = 31
+    MO.9  = 30
+    MO.10 = 31
+    MO.11 = 30
+    MO.12 = 31
+    IF LEAP_YEAR(JULIAN_YYYY) THEN MO.2 = 29
+    DO I=1 TO 12 WHILE JULIAN_DDD > MO.I
+       JULIAN_DDD = JULIAN_DDD - MO.I
+       END
+    MM   = RIGHT(I,2,'0')
+    DD   = RIGHT(JULIAN_DDD,2,'0')
+    G_DATE = MM||'/'||DD||'/'||JULIAN_YYYY
+    END
+ RETURN G_DATE
+
+
+ VALIDATE_JULIAN:
+
+ VALID_DATE = 0
+
+ IF LENGTH(JUL_DATE) ¬=7 | DATATYPE(JUL_DATE) ¬= 'NUM' THEN
+    SAY 'DT003E - DATE TOO SHORT/LONG OR NON-NUMERIC AS' JUL_DATE
+ ELSE DO
+    JULIAN_YYYY = SUBSTR(JUL_DATE,1,4)
+    JULIAN_DDD  = SUBSTR(JUL_DATE,5,3)
+    IF (JULIAN_DDD > 366) THEN ,
+       SAY 'DT004E - NUMBER OF DAY > 366 AS' JULIAN_DDD
+    ELSE IF (LEAP_YEAR(JULIAN_YYYY) = 0) & (JULIAN_DDD = 366) THEN ,
+     SAY 'DT005E - INVALID DAYS FOR A NON-LEAP YEAR AS' JULIAN_YYYY
+         ELSE IF (JULIAN_YYYY < 1) THEN ,
+            SAY 'DT008E - INVALID YEAR AS' JULIAN_YYYY
+            ELSE VALID_DATE = 1
+    END
+ RETURN VALID_DATE
+
+ LEAP_YEAR: PROCEDURE
+ PARSE ARG YEAR_CHECKED
+
+ IF (YEAR_CHECKED // 100) = 0 THEN ,
+    IF (YEAR_CHECKED // 400) = 0 THEN LEAP_YEAR_FLAG = 1
+    ELSE LEAP_YEAR_FLAG = 0
+ ELSE IF (YEAR_CHECKED // 4) = 0 THEN LEAP_YEAR_FLAG = 1
+    ELSE LEAP_YEAR_FLAG = 0
+
+ RETURN LEAP_YEAR_FLAG
+./       ADD   NAME=LBIND
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.BIND')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.BIND("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=LCMD
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.COMMANDS')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.COMMANDS("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=LCNTL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.CNTL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.CNTL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=LCOB
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.COBOL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.COBOL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=LCOPY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.COPY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.COPY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=LC1
+Arg DDName .
+
+x = Outtrap('Dsn.')
+"LISTA STATUS"
+x = Outtrap('OFF')
+
+OldDD = ''
+Do iDsn = 1 To Dsn.0
+  Dsn = Dsn.iDsn
+  If Left(Dsn,1) = '-' Then Iterate
+  If Left(Dsn,1) = ' ' Then Iterate
+  If Pos('(',Dsn) > 0 Then Iterate /* for pds(mem) allocations */
+  Dsn = Strip(Dsn)
+
+  /* we know we'er working with a dataset now. */
+  /* look ahead to see if there's a dd.        */
+  iDD = iDsn + 1
+  DD = Dsn.iDD
+  Parse Var DD DD 'KEEP'
+  DD = Strip(DD)
+  If Words(DD) > 1 Then Iterate
+
+  If DD = DDName Then OldDD = DD        /* we're interested */
+  Else If DD /= '' Then OldDD = ''        /* not interested */
+
+  /* OldDD is something, so add it to our list */
+  If OldDD /= '' Then Say Dsn
+End
+
+Return
+./       ADD   NAME=LJCL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.JCL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.JCL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=LMAP
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.MAP')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.MAP("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=LOTTO
+/* lottery.rex -- the following generates 6 random lottery numbers */
+  limit = 49    /* the highest value is 49, adjust as necessary */
+  numbers = '' /* the selected numbers will be added to this variabl */
+   /* prepare 6 random numbers */
+  do until words( numbers ) = 6     /* need 6 numbers */
+    number = random( 1, limit ) /* get another random number */
+    if wordpos( number, numbers ) = 0 then  /* not already selected? */
+
+      numbers = numbers number /* remember number */
+
+    end /* end loop */
+   /* format results */
+  say 'Here come 6 numbers [range: 1-'limit']'   /* title line */
+
+  say numbers               /* show 6 numbers */
+
+  say 'Good luck'
+./       ADD   NAME=LPROC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.PROCLIB')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('DEVT.LAWSON.PROCLIB("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MCLIST
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.CLIST')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.CLIST("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MCNTL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.CNTL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.CNTL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MCOB
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.PROG')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.PROG("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MCOPY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.COPY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.COPY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MDATE
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.DATE')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.DATE("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MEXEC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.EXEC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.EXEC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MEXT
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.EXTRACT')"
+./       ADD   NAME=MICLIST
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.CLIST')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+  ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.CLIST("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MICOPY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.COPY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.COPY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MIJCL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.JCL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.JCL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MINP
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.INPUT')"
+./       ADD   NAME=MIPARM
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.PARM')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.PARM("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MIPROC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.PROC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.PROC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MIPROG
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.PROG')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.MITSUI.PROG("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MJCL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.JCL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.JCL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MJUL
+   /* REXX */
+   /*         EXEC DISPLAYS CURRENT DATE & TIME */
+   /*                   */
+   SAY ' '
+   SAY '      DATE : 'DATE() '    JULIAN : 'DATE(J)
+   SAY ' '
+   EXIT
+./       ADD   NAME=MLAY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.LAYOUT')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.LAYOUT("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MNOTES
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.NOTES')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.NOTES("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MOUT
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.OUTPUT.FILE')"
+./       ADD   NAME=MPARM
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.PARM')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.PARM("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MPROC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.PROC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.PROC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MPROG
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.PROG')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.PROG("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MREP
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.REP')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.REP("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MSAS
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.SAS')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.SAS("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MSOUT
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.SPUFI.OUT')"
+./       ADD   NAME=MSPUFI
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.SPUFI')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.SPUFI("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MSQL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.SQL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.SQL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=MSUBJ
+/* Rexx submit a job     */
+DO UNTIL DATATYPE(month,WHOLE),
+& month >= 01 & month <= 12
+SAY "Enter the month as a number from 1 through 12"
+PULL month
+END
+DO UNTIL DATATYPE(dlrno,WHOLE),
+& LENGTH(dlrno) = 5
+SAY "Enter the 5 digit dealer number"
+PULL dlrno
+END
+
+Address ISPEXEC
+'CONTROL DISPLAY SAVE'
+"VIEW DATASET('JONNALR.TEST.JCL(DELETE)') "
+If RC > 4 Then Do
+   'SETMSG MSG(ISRZ002)'
+   Signal Qui
+End
+
+ISREDIT MACRO
+ISREDIT CHANGE ALL '&MO' month
+EXIT
+
+Qui:
+"ISREDIT CURSOR = "cl cc
+Exit
+
+./       ADD   NAME=MSYN
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.NOTES(MSYN)')"
+   EXIT
+./       ADD   NAME=MUTIL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.UTIL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.UTIL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=NOTES
+  ===
+  arg var1 var2 /* Assigns: var1='RED'; var2='BLUE' */
+  If var1<>'RED' & var1<>'YELLOW' & var1<>'BLUE' then signal err
+  If var2<>'RED' & var2<>'YELLOW' & var2<>'BLUE' then signal err
+  total=length(var1)+length(var2)
+  SELECT;
+  When total=7 then new='purple'
+  When total=9 then new='orange'
+  When total=10 then new='green'
+  Otherwise new=var1 /* entered duplicates */
+  END
+  Say new; exit /* Displays: "purple" */
+  Err:
+  say 'Input error--color is not "red" or "blue" or "yellow"'; exit
+  ===
+./       ADD   NAME=NOTE1
+/* REXX PROGRAM TO SHOW FUNCTION COMMUNICATION. */
+   CALL FUNCT1 2
+   SAY "GIVE THE FUNCT1 A" 2 "AND YOU GET BACK A" RESULT
+   SAY "GIVE THE FUNCT1 A" 4 "AND YOU GET BACK A" FUNCT1(4)
+   EXIT 0
+
+   FUNCT1: PROCEDURE
+   ARG INPUT
+   CODE = INPUT * 3
+   RETURN CODE
+./       ADD   NAME=ODEF
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('PROD.PPFA.OVERLAY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('PROD.PPFA.OVERLAY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PARSE1
+call SUB 'abra', 'ca', 'dabra'
+  say result                     /* shows: ab ca da */
+  return 0
+  sub : procedure
+    parse arg magic1 +2 , magic2 +2 , magic3 +2
+    return magic1 magic2 magic3
+./       ADD   NAME=PARSE2
+parse value 'Sam likes peaches and cream' with ,   /* continue... */
+    subject . object
+    say subject
+    say object
+
+parse value 'I think, therefore I am (I think)' with ,
+    precondition ',' consequence '(' qualifier ')'
+    say precondition
+    say consequence
+    say qualifier
+
+parse value '16:51:42' with , /* this could have been returned by the
+time() function */
+    hour ':' minute ':' second
+ say hour minute second
+
+delim = ':'
+  parse value '16:51:42' with , /* this could have been returned by the
+time() function */
+    hour (delim) minute (delim) second
+ say hour minute second
+
+parse value '02/07/18' with ,
+    hour +2 delim +1 minute (delim) second
+ say hour minute second
+
+parse value '16:51:42' with ,
+    hour 3 4 minute 6 7 second 9
+ say hour minute second
+
+ parse value '16:51:42' with ,
+    hour =3 =4 minute =6 =7 second =9
+ say hour minute second
+
+parse value '16:51' with ,
+    hour +3 minute +2
+ say hour minute
+./       ADD   NAME=PBIND
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.DB2.BIND')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.DB2.BIND("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PCICS
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.CICS.COBOL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.CICS.COBOL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PCLIST
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.CLIST')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.CLIST("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PCMD
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.DB2.COMMANDS')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.DB2.COMMANDS("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PCNTL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('PROD.BATCH.CNTL')"
+   EXIT
+   END
+
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('PROD.BATCH.CNTL("MEMNAME")')"
+   EXIT
+   END
+
+./       ADD   NAME=PCOB
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.COBOL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.COBOL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PCOPY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.COPY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.COPY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PDATE
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.DATE')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.DATE("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PDEF
+
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('PROD.PPFA.PAGEDEF')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('PROD.PPFA.PAGEDEF("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PDS2SEQ
+/* REXX */
+
+record_count = 0
+
+ADDRESS ISPEXEC
+
+Say 'Enter the dataset name of your PDS:'
+PARSE UPPER PULL dsnpds
+
+"LMINIT DATAID(PDSID) DATASET("dsnpds") ENQ(SHR) ORG(DSORG)"
+zrc = RC
+
+SELECT
+WHEN zrc \= 0
+THEN DO
+       SAY 'ISPF service LMINIT failed for PDS dataset.',
+           ' Return code:' zrc
+       EXIT zrc
+     END
+
+WHEN dsorg \= 'PO'
+THEN DO
+       SAY 'Dataset is not a PDS.'
+       EXIT zrc
+     END
+
+OTHERWISE SAY 'ISPF service LMINIT for PDS successful.'
+END /* SELECT */
+
+"LMOPEN DATAID("pdsid") OPTION(INPUT) LRECL(LRECL) RECFM(RECFM)"
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'ISPF service LMOPEN failed for PDS dataset.',
+           ' Return code:' zrc
+       SIGNAL Free_Pds
+     END
+ELSE SAY 'ISPF service LMOPEN for PDS successful.'
+
+recfm = SUBSTR(recfm,1,1) SUBSTR(recfm,2,1) SUBSTR(recfm,3,1),
+        SUBSTR(recfm,4,1)
+lrecl = STRIP(lrecl,'L',0)
+
+/* */
+
+SAY
+SAY 'Enter the dataset name for the sequential equivalent of your PDS:'
+PARSE UPPER PULL dsnseq
+
+SAY
+SAY 'Enter the unit name for the sequential equivalent of your PDS:'
+PARSE UPPER PULL unit
+
+SAY
+SAY 'Enter the volume name for the unit or leave blank:'
+PARSE UPPER PULL volume
+
+IF volume \= ''
+THEN volume = 'VOLUME('volume')'
+
+SAY
+SAY 'Enter TSO ALLOCATE command DCB parameters or leave blank:'
+PARSE UPPER PULL dcb
+
+IF dcb = ''
+THEN dcb = 'RECFM('recfm') LRECL('lrecl') LIKE('dsnpds')'
+
+ADDRESS TSO "ALLOC F(PDSTOSEQ) DA("dsnseq") NEW CATALOG",
+            "UNIT("unit")" volume "CYLINDERS SPACE(5 1)",
+            "DSORG(PS)" dcb
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'TSO command ALLOCATE failed for sequential dataset.',
+           ' Return code:' zrc
+       SIGNAL Close_Pds
+     END
+
+ADDRESS TSO "FREE F(PDSTOSEQ)"
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'TSO command FREE failed for sequential dataset.',
+           ' Return code:' zrc
+       SAY 'Attempting to continue.'
+     END
+ELSE SAY 'Sequential dataset allocated successfully.'
+
+"LMINIT DATAID(SEQID) DATASET("dsnseq") ENQ(EXCLU)"
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'ISPF service LMINIT failed for sequential dataset.',
+           ' Return code:' zrc
+       SIGNAL Close_Pds
+     END
+
+"LMOPEN DATAID("seqid") OPTION(OUTPUT)"
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'ISPF service LMOPEN failed for sequential dataset.',
+           ' Return code:' zrc
+       SIGNAL Free_Seq
+     END
+
+/* */
+
+member = ''
+
+DO member_loop = 1
+   SAY
+   "LMMLIST DATAID("pdsid") OPTION(LIST) MEMBER(MEMBER) STATS(NO)"
+   zrc = RC
+
+   SELECT
+   WHEN zrc > 8
+   THEN DO
+          SAY 'ISPF service LMMLIST failed for PDS dataset.',
+              ' Return code:' zrc'.  Member:' member'.'
+         LEAVE member_loop
+        END
+
+   WHEN zrc = 8               /* End of member list. */
+   THEN LEAVE member_loop
+
+   WHEN zrc = 0
+   THEN SAY 'Processing member:' member
+
+   OTHERWISE                  /* Return code 4.      */
+        DO
+          SAY 'No members in PDS.'
+          LEAVE member_loop
+        END
+   END /* SELECT */
+
+   "LMMFIND DATAID("pdsid") MEMBER("member") STATS(YES)"
+   zrc = RC
+
+   IF zrc \= 0
+   THEN DO
+          SAY 'ISPF service LMMFIND failed for PDS dataset.',
+              ' Return code:' zrc'.  Member:' member'.'
+         LEAVE member_loop
+        END
+   ELSE SAY 'Positioned to member:' member
+
+   IF \DATATYPE(zlcnorc,'W')
+   THEN DO
+          SAY 'Generating statistics for member:' member'.'
+          "LMMSTATS DATAID("pdsid") MEMBER("member")"
+          "LMMFIND DATAID("pdsid") MEMBER("member") STATS(YES)"
+        END
+
+   delimit = './' member zlvers'.'zlmod   zlcdate zlmdate zlmtime,
+                         zlcnorc  zlinorc zlmnorc zluser
+
+   "LMPUT DATAID("seqid") MODE(INVAR) DATALOC(DELIMIT)",
+                          "DATALEN("lrecl")"
+   zrc = RC
+
+   IF zrc \= 0
+   THEN DO
+          SAY 'ISPF service LMPUT failed for sequential dataset.',
+              ' Return code:' zrc'.  Member:' member'.'
+         LEAVE member_loop
+        END
+   ELSE record_count = record_count + 1
+
+   DO record_loop = 1
+      "LMGET DATAID("pdsid") MODE(INVAR) DATALOC(RECORD)",
+                             "DATALEN(LENGTH) MAXLEN("lrecl")"
+      zrc = RC
+
+      SELECT
+      WHEN zrc > 8
+      THEN DO
+             SAY 'ISPF service LMGET failed for PDS dataset.',
+                 ' Return code:' zrc'.  Member:' member'.'
+             LEAVE member_loop
+           END
+
+      WHEN zrc = 8
+      THEN DO
+             SAY 'Member:' member 'completed.'
+             ITERATE member_loop
+           END
+
+      OTHERWISE
+           DO
+             "LMPUT DATAID("seqid") MODE(INVAR) DATALOC(RECORD)",
+                                    "DATALEN("length")"
+             zrc = RC
+
+             IF zrc \= 0
+             THEN DO
+                    SAY 'ISPF service LMPUT failed for sequential',
+                        'dataset.'
+                        ' Return code:' zrc'.  Member:' member'.'
+                    LEAVE member_loop
+                  END
+             ELSE record_count = record_count + 1
+           END
+      END /* SELECT */
+   END record_loop
+END member_loop
+
+/* */
+
+member_loop = member_loop - 1
+
+SAY member_loop 'members processed.'
+SAY record_count 'records written to sequential dataset.'
+
+"LMMLIST DATAID("pdsid") OPTION(FREE)"
+"LMCLOSE DATAID("seqid")"
+
+Free_Seq:
+"LMFREE DATAID("seqid")"
+
+Close_Pds:
+"LMCLOSE DATAID("pdsid")"
+
+Free_Pds:
+"LMFREE DATAID("pdsid")"
+
+SAY 'All processing complete.'
+
+EXIT 0
+
+
+
+./       ADD   NAME=PJCL
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.JCL')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.JCL("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PLIST
+
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('TEST.PROGRAM.LISTING')"
+   EXIT
+   END
+
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('TEST.PROGRAM.LISTING("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PMAP
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('PROD.CICS.MAP')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('PROD.CICS.MAP("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PPARM
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('PROD.BATCH.PARMLIB')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "BROWSE DATASET('PROD.BATCH.PARMLIB("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PPROC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('SYS4.PRODPROC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('SYS4.PRODPROC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PRIME1
+/* sieve.rex */
+  arg limit .    /* processing limit */
+
+/* validate numeric value */
+  if datatype( limit, 'Wholenumber' ) <> 1 then
+    call usagemsg 'The limit is not a whole number'
+  isPrime. = 1    /* presume all numbers are prime ! */
+
+  do n=2 to limit
+    if isPrime.n then
+      call anotherPrime n
+    end
+  exit 0
+  anotherPrime : procedure expose limit isPrime.
+    arg prime
+
+    say right( prime, length( limit ) )   /* emit current prime */
+    /* mark multiples as non-primes */
+    do multiple=prime by prime to limit
+
+      isPrime.multiple = 0 /* multiples of primes are not prime */
+   end
+    return
+  usagemsg : procedure
+    if arg(1) <> '' then
+      say arg(1)
+    say 'Usage'
+    say '  rexx sieve limit'
+    exit 1
+./       ADD   NAME=PSYN
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.DB2.SYNONYM')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.DB2.SYNONYM("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=PULLNUMS
+/* REXX */
+/* Date: 04/01/1999               by: Bruce Gillispie  */
+/* Exec Name: PULLNUMS                                 */
+/*                                                     */
+/* Function: Process a string (left to right), pull    */
+/*           all of the Numeric values out and assign  */
+/*           then to a variable.                       */
+/*                                                     */
+/*just test input */
+ indata = 'free a..#.%^*#!3(2)xer...54\/321....9.87.6.0abcdefg 444';
+
+/*send input data to procedure */
+ call pullnums indata
+ say '---> 'pnums     /* send output to screen */
+ exit 0
+
+pullnums: procedure expose indata pnums ;
+ i = '1'; pnums = ''; ln = length(indata);      /* init vars     */
+  do i = 1 to ln
+   do while datatype(substr(indata,i,1))='NUM'  /* it's a number */
+   /* concat & get next byte */
+    pnums=pnums||substr(indata,i,1); i=i+1;
+
+   end
+  end i
+return pnums
+./       ADD   NAME=PVSAM
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.VSAM')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('PROD.BATCH.VSAM("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=QB
+/* Rexx qb - QuickBrowse */
+Address ISPEXEC
+'CONTROL ERRORS RETURN'
+Address ISREDIT
+'MACRO PROCESS'
+'(CL,CC) = CURSOR'
+If cc = 0 Then Exit
+
+delim = "~'!*%&-_=+\{};:`<,>/?" '"'
+'ISREDIT (LINE) = LINE .ZCSR'
+end = length(line)
+start = end - verify(reverse(line)" ",delim,"M",end-cc+1)+2
+end = verify(line"",delim,"M",cc)-1
+
+If start > end Then Exit
+word = substr(line,start,end-start+1)
+
+Address ISPEXEC
+'CONTROL DISPLAY SAVE'
+"BROWSE DATASET('"word"')"
+If RC > 4 Then Do
+   'SETMSG MSG(ISRZ002)'
+   Signal Qui
+End
+'CONTROL DISPLAY RESTORE'
+
+Qui:
+"ISREDIT CURSOR = "cl cc
+Exit
+./       ADD   NAME=QD
+/* Rexx qd - QuickDelete */
+Address ISPEXEC
+'CONTROL ERRORS RETURN'
+Address ISREDIT
+'MACRO PROCESS'
+'(CL,CC) = CURSOR'
+If cc = 0 Then Exit
+
+delim = "~'!%*&-_=+\{};:`<,>/?" '"'
+'ISREDIT (LINE) = LINE .ZCSR'
+end = length(line)
+start = end - verify(reverse(line)" ",delim,"M",end-cc+1)+2
+end = verify(line"",delim,"M",cc)-1
+
+If start > end Then Exit
+word = substr(line,start,end-start+1)
+cx = right(cl,2);cx = cx + 3
+cy = right(cc,2);cy = cy + 3
+   Address tso "DEL '"word"'"
+   Address ISPEXEC "rempop all"
+Exit
+./       ADD   NAME=QE
+/* Rexx qe - QuickEdit */
+Address ISPEXEC
+'CONTROL ERRORS RETURN'
+Address ISREDIT
+'MACRO PROCESS'
+'(CL,CC) = CURSOR'
+if cc = 0 Then Exit
+
+delim = "~'!%*&-_=+\{};:`<,>/?" '"'
+'ISREDIT (LINE) = LINE .ZCSR'
+end = length(line)
+start = end - verify(reverse(line)" ",delim,"M",end-cc+1)+2
+end = verify(line"",delim,"M",cc)-1
+
+If start > end Then Exit
+word = substr(line,start,end-start+1)
+
+Address ISPEXEC
+'CONTROL DISPLAY SAVE'
+"EDIT DATASET('"word"')"
+If RC > 4 Then Do
+   'SETMSG MSG(ISRZ002)'
+   Signal Qui
+End
+'CONTROL DISPLAY RESTORE'
+
+Qui:
+'ISREDIT CURSOR = 'cl cc
+Exit
+./       ADD   NAME=QH
+/* Rexx qh - QuickHrecall */
+Address ISPEXEC
+'CONTROL ERRORS RETURN'
+Address ISREDIT
+'MACRO PROCESS'
+'(CL,CC) = CURSOR'
+If cc = 0 Then Exit
+
+delim = "~'!*%&-_=+\{};:`<,>/?" '"'
+'ISREDIT (LINE) = LINE .ZCSR'
+end = length(line)
+start = end - verify(reverse(line)" ",delim,"M",end-cc+1)+2
+end = verify(line"",delim,"M",cc)-1
+
+If start > end Then Exit
+word = substr(line,start,end-start+1)
+
+Address TSO
+"HRECALL '"word"'"
+'ISREDIT CURSOR = 'cl cc
+Exit
+./       ADD   NAME=QQ
+/* CURRENT DATE AND TIME */
+PARSE VALUE TIME() WITH HR2 ':' MIN2 ':' SEC2
+PARSE VALUE DATE(S) WITH YY2 +4 MM2 +2 DD2 +2
+
+/* START DATE AND TIME */
+TODAY = DATE('BASE')
+DAYS = TODAY - DATE('BASE', '20080512', 'STANDARD')
+SAY DAYS   'DAYS ';
+SAY DATE(S);
+./       ADD   NAME=QQ1
+ /* REXX */
+ DO A = 1 TO 3
+ QUEUE "A=" A /* PUT DATA IN THE STACK (FIFO) */
+ END
+ SAY "NUMBER OF ELEMENTS IN THE STACK IS:" QUEUED()
+ IF QUEUED() > 0 THEN
+ DO QUEUED() /* DISPLAY ALL THE ITEMS IN THE STACK */
+ PARSE PULL V1
+ SAY V1
+ END
+ EXIT
+./       ADD   NAME=QR
+/* Rexx qr - QuickRename */
+Address ISPEXEC
+'CONTROL ERRORS RETURN'
+Address ISREDIT
+'MACRO PROCESS'
+'(CL,CC) = CURSOR'
+If cc = 0 Then Exit
+
+delim = "~'!*%&-_=+\{};:`<,>/?" '"'
+'ISREDIT (LINE) = LINE .ZCSR'
+end = length(line)
+start = end - verify(reverse(line)" ",delim,"M",end-cc+1)+2
+end = verify(line"",delim,"M",cc)-1
+
+If start > end Then Exit
+word = substr(line,start,end-start+1)
+
+Say 'The dataset to rename is 'word'.'
+Say;Say;Say 'Please enter at the prompt the new name,'
+Say ' or "HI" to Exit. ';Say
+Pull word2
+If word2 = 'HI' Then Exit
+Address TSO
+"RENAME '"word"','"word2"'"
+If RC = 0 Then
+   Say 'Rename to "'word2'" was successful.'
+Else
+   Say 'Rename to "'word2'" was not successful.'
+
+If rc > 0 Then Address ISPEXEC 'SETMSG MSG('zerrmsg')'
+'ISREDIT CURSOR = 'cl cc
+Exit
+./       ADD   NAME=QV
+/* Rexx qv - QuickView */
+Address ISPEXEC
+'CONTROL ERRORS RETURN'
+Address ISREDIT
+'MACRO PROCESS'
+'(CL,CC) = CURSOR'
+if cc = 0 Then Exit
+
+delim = "~'!*%&-_=+\{};:`<,>/?" '"'
+'ISREDIT (LINE) = LINE .ZCSR'
+end = length(line)
+start = end - verify(reverse(line)" ",delim,"M",end-cc+1)+2
+end = verify(line"",delim,"M",cc)-1
+
+If start > end Then Exit
+word = substr(line,start,end-start+1)
+Address ISPEXEC
+'CONTROL DISPLAY SAVE'
+"VIEW DATASET('"word"')"
+if rc > 0 Then  'SETMSG MSG(ISRZ002)'
+'CONTROL DISPLAY RESTORE'
+
+'ISREDIT CURSOR = 'cl cc
+Exit
+./       ADD   NAME=REXXTUT
+CenteredString      = CENTER( Instr, Length, PadChar)
+CenteredString      = CENTRE( Instr, Length, PadChar)
+LeftAdjustedString  = LEFT(   Instr, Length, PadChar)
+RightAdjustedString = RIGHT(  Instr, Length, PadChar)
+
+CENTRE('hello',14)   = '    hello     '
+CENTER('=1234567890  =',5) = '34567'  CENTER('abc',8,'-')      =
+'--abc---'
+LEFT('123456789',12) = '123456789   ' RIGHT('1223456789',12,'-')=
+'---123456789'
+LEFT('123456789',4)  = '1234'         RIGHT('123456789',4)     = '6789'
+**
+DiffCharNo  = COMPARE(String1,    String2 ,   PadChar)
+Boolean     = ABBREV( LongString, ShortString , MinLength)
+COMPARE('ABC','ABC')       = 0; ABBREV('abcdefghi','abcd')  = 1
+COMPARE('ABCD','ABC')      = 4; ABBREV('abcdefghi','abzz')  = 0
+COMPARE('ABC','ABCD')      = 4; ABBREV('abcdefghi','abcd',6)= 0
+COMPARE('ABCD','ABcD')     = 3; ABBREV('abcdefghi','abcd',4)= 1
+COMPARE('WXYZ    ','WXYZ') = 0;
+COMPARE('ABC---','ABC-','-')=0
+**
+BothString= INSERT( StringtobeInserted, BaseString, at, Length, Pad)
+String    = OVERLAY( OverlayingString,  BaseString, at, Length, Pad)
+INSERT('12345','abcdef')          = '12345abcdef'
+INSERT('12345','abcdef',3)        = 'abc12345def'
+INSERT('12345','abcdef',3,2)      = 'abc12def'
+INSERT('123','abcdef',2,5,'*')    = 'ab123**cdef'
+OVERLAY('12345','abcdefghi')      = '12345fghi'
+OVERLAY('12345','abcdefghi',3)    = 'ab12345hi'
+OVERLAY('12345','abcdefghi',3,2)  = 'ab12efghi'
+OVERLAY('123','abcdefghi',2,5,'*')= 'a123**ghi'
+**
+Sub-string  = SUBSTR( String, StartofBitRequired, Length)
+Sub-string  = DELSTR( String, StartBittoBeLeftOut,Length)
+DELSTR('12345678',5)= '1234'           DELSTR('12345678',4,2)   =
+'123678'
+DELSTR('abcdefgh',12)    = 'abcdefgh'  SUBSTR('12345678',4)     =
+'45678'
+SUBSTR('12345678',4,2)   = '45'        SUBSTR('12345678',14,2)  = '
+'
+SUBSTR('12345678',5,7)   = '5678   '   SUBSTR('12345678',5,7,'-')=
+'5678---
+**
+PosNum  = POS(     StringtobeFound, StringToLookIn, Start)
+PosNum  = INDEX(   StringToLookIn , StringtobeFound,Start)
+PosNum  = LASTPOS( StringtobeFound, StringToLookIn, Start)
+POS('x', '1234567x90ABCDxFG')    = 8  POS('xx','1234567xx0ABCDxxG',10)=
+15
+POS('z', '1234567x90ABCDxFG')   =  0  INDEX('1234567xx0ABCDxxG','xx')
+=  8
+LASTPOS('x','1234567x90ABCDxFG')= 15
+LASTPOS('x','123x567x90ABCDxFG',10)=  8
+**
+LongOutString  = COPIES( StringTobeRepeated, NumberRequired)
+RandomNumber   = RANDOM( LowestNumber, HighestNumber )
+LengthofString  = LENGTH( String )
+LENGTH(123456789)      = 9    LENGTH(")              = 0
+LENGTH(ABCDEFGHIJKLM)  = 13   LENGTH(COPIES("*",50)) = 50
+LENGTH("12.000000000") = 12
+**
+ReversedString = REVERSE( StringToBeReveresed )
+REVERSE('abcdefghijk') = 'kjihgfedcba'
+**
+StrippedString = STRIP( StringToBeStripped , Options, Char )
+STRIP('  remove spaces  ')     = 'remove spaces'
+STRIP('  leading only   ','l') = 'leading only   '
+STRIP('  trailing only  ','t') = '  trailing only'
+STRIP('  both (default) ','b') = 'both (default)'
+STRIP('---remove dashes---','b','-') = 'remove dashes'
+**
+OutStr = TRANSLATE(Instr,  TranO, TranI, Pad )
+TRANSLATE('abcdefghi')             = 'ABCDEFGHI'
+TRANSLATE('abcdef','123','abc')    = '123def'
+TRANSLATE('abcdef','1','abcd','*') = '1***ef'
+TRANSLATE('No Exclaiming! Or questions?','','!?','.')
+          = ' No Exclaiming. Or Questions.'
+**
+Number = VERIFY(Instr, RefStr  , Opt, Start  )
+VERIFY('4567','1234567890') = '0'
+VERIFY('45x7','1234567890') = '3'
+**
+VERIFY('456e76',XRANGE('0','9'))    = '4'
+VERIFY('somechar',XRANGE('a','z'))  = '0'
+VERIFY('some char',XRANGE('a','z')) = '5'
+**
+TheNthWord = WORD(InputString, NoOfWordRequired )
+WORD('one two three four five',3) =  'three'
+WORD('one two three four five',1) =  'one'
+WORD('one two three four five',6) =  ''
+**
+PositionofWordNumber = WORDINDEX( InputString, WordNumber )
+WORDINDEX('one two three four five',3) = '9'
+WORDINDEX('one two three four five',4) = '15'
+**
+WordNumber = WORDPOS( FindThisWord, InThisString, StartWordNo  )
+WORDPOS('four','one two three four five'  ) = '4'
+WORDPOS('five','one two three four five',3) = '5'
+**
+LengthOfWord  = WORDLENGTH( StringToLookIn , WordNo )
+WORDLENGTH('one two three four five',3) =  '5'
+WORDLENGTH('one two three four five',5) =  '4'
+**
+PartOfInString = SUBWORD( InString, FirstWordNo,  NoOfWords )
+SUBWORD('one two three four five',3) = 'three four five'
+SUBWORD('one two three four five',3,2) = 'three four'
+**
+MostOfString = SUBWORD(String, FirstWordNotCopied ,  NoOfWordsNotCopied
+)
+DELWORD('one two three four five',3) = 'one two '
+DELWORD('one two three four five',3,2) =  'one two five'
+**
+NoOfWords = WORDS( String )
+WORDS('one two three four five') = '5'
+WORDS('' ) =  '0'
+**
+SpacedString = SPACE(String, NoOfSpaces ,  PadChar )
+SPACE('  one   two three  four  ') = 'onetwothreefour'
+   SPACE('  one   two three  four  ',1) = 'one two three four'
+   SPACE('  one   two three  four  ',3,'_') =
+'one___two___three___four'
+**
+CurrentTime  = TIME( Option )
+Options:
+       'N' = hh:mm:ss (default)    'H' = hh (whole since midnight)
+       'L' = hh:mm:ss.uuuuuu       'M' = mm (whole since midnight)
+       'R' = Reset Timer           'S' = ss (whole since midnight)
+       'E' = Elasped time since reset  'C' = hh:mmAM/PM
+**
+TodaysDate  = DATE( Option )
+Options:
+       'N' = dd mon yyyy (default)    'E' = dd/mm/yy
+       'B' = days from 01/01/0000     'U' = mm/dd/yy
+       'D' = Julian Date              'O'=  yy/mm/dd
+       'J' = Julian Date              'S' = yyyymmdd
+       'W' = Weekday                  'M' = Month
+**
+FormatedNumber = FORMAT( Number, Digits, DecimalDigits )
+FORMAT(' 123.456789',4,4) = ' 123.4567'
+FORMAT('12.34',5,4)       = '  12.3400'
+**
+TruncatedNumber = TRUNC( Number, DecimalDigits  )
+TRUNC(' +0123.45678 ')  =  '123'
+TRUNC(' +0123.45678 ',2) =  '123.45'
+**
+SignOfNumber = SIGN( Number )
+SIGN('+12.7') =  '1'
+SIGN('0 ')     =  '0'
+SIGN('-235')   =  '-1'
+**
+AbsoluteValue = ABS( Number )
+ABS('-057') =  '57'
+ABS(' 0195')   = ' 0195'
+**
+LargestNumber  = MAX( Number , Number , Number , etc  )
+   SmallestNumber = MIN( Number , Number , Number , etc  )
+MAX( 1,2 ,3 ,4, 5, 6, 7 ) =  '7'
+   MIN( 1,2 ,3 ,4, 5, 6, 7 ) =  '1'
+**
+either BooleanNo = DATATYPE( String , Option )
+      or     CHARorNUM = DATATYPE( String )
+Options:
+      A - Alphanumeric (A-Z,a-z,0-9) N - Valid Number
+      B - Binary only (0,1)          U - Uppercase only (A-Z)
+      L - Lower case only(a-z)       W - Whole Number
+      M -Mixed case (A-Z, a-z)       X - Hexadecimal (0-9, A-E)
+      S - Valid REXX Symbol(A-Z,a-z, 0-9 ! ? _ .)
+  DATATYPE('+123.4567')                         =  'NUM'
+        DATATYPE('This is not a number.')             =  'CHAR'
+        DATATYPE('Only4AlphanemericChars','a')        =  '1'
+        DATATYPE('No spaces or specials!','Alphanum') =  '0'
+        DATATYPE(SPACE('Include Spaces',0),'A')       =  '1'
+        DATATYPE('onlylowercasechars','l')(Lowercase) =  '1'
+        DATATYPE('MixedCaseCharacters','m')(Mixedcase)=  '1'
+        DATATYPE('UPPERCASECHARACTERS','u')(Uppercase)=  '1'
+        DATATYPE('Valid_REXX_Symbol','s)   (Symbol)   =  '1'
+        DATATYPE('Not a Valid Symbol','s') (Symbol)   =  '0'
+        DATATYPE('010101110010111010111','b')(Binary) =  '1'
+        DATATYPE('A3b6C35689e2A9C4c905fff','x') (Hex) =  '1'
+        DATATYPE('+123456.7890000000','n') (Number)   =  '1'
+        DATATYPE('+123456','w')  (Whole number)       =  '1'
+**
+C = Character, D = Decimal, X = Hexadecimal, B = Binary
+   C2D('A')    =  '65'       C2D('AB')   =  '16706'
+   C2D('0A'x)  =  '10'       C2X('A')    =  '41'
+   C2X('AB')   =  '4142'     C2X('0A'x)  =  '0A'
+   X2C('41')   =  'A'        X2C('4142') =  'AB'
+   D2C('65')   =  'A'        D2C('16706')=  'AB'
+   X2D('41')   =  '65'       X2D('4142') =  '16706'
+   X2D('41'x)  =  '10'       C2B('A')    =  '01000001'
+   B2C('01000001') =  'A'
+**
+C2B(BITOR('00010001'b,'01010101'b))  =  '01010101'
+   C2X(BITOR('11'x,'55'x))              =  '55'
+   C2B(BITXOR('00010001'b,'01010101'b)) =  '01000100'
+   C2X(BITXOR('11'x,'55'x))             =  '44'
+   C2B(BITAND('11110000'b,'00111100'b)) =  '00110000'
+   C2X(BITAND('F0'x,'5C'x))             =  '50'
+**
+3.5.1 The SIGNAL instruction / CONDITION function
+            CALL   ONorOFF condition NAME trapname
+            SIGNAL ONorOFF condition NAME trapname
+            CONDITION( Option ) = ConditionInfo
+If you hit an un-recoverable error in your program you may want to use
+this to jump to a routine which is going to detail all the horrible
+things that have just happened (to create the error) before ending
+execution. The advantage of coding it in a separate routine is that it
+gets all the messages out of the main body of the program and also it
+may get called from one of several instructions. The S IGNAL ON
+condition can be used to say when you should jump to your error routine
+and what the routine is called (trapname). The 'condition' can be:
+   ERROR - external command error   FAILURE - external command failure.
+   HALT - on external halt request. NOVALUE - using an un-initialized
+variable.
+   NOTREADY - i/o stream error      SYNTAX -  syntax or execution error.
+The difference between S IGNAL and C ALL is that S IGNAL will not return
+you from the function it acts as a G OTO. Note that some of the
+conditions can not be used with C ALL. The C ONDITION function can be
+placed in an error sub-routine and it will give you some useful data
+about the error. Without an option it will say whether a CALL or a S
+IGNAL (not very exciting) involved the routine. An Option of ' C'
+returns the condition name, for example ' ERROR' or' N OVALUE'. An
+option of ' D' gives the type of trap. An option of ' I' returns '
+SIGNAL' or ' CALL' depending on how the routine was requested. An option
+of ' S' returns the status of the trapped condition.
+ErrorType = RC
+    ERRORTEXT( ErrorNumber ) = ErrorDescription
+**
+/* REXX Showing the SIGNAL instruction   */
+   1   SIGNAL ON SYNTAX
+   2   My_Result = 0
+   3   IF MyResult THEN SAY "HELLO"
+   4   EXIT 0
+   5   SYNTAX:
+   6   SAY "*** SYNTAX / EXECUTION  ERROR******"
+   7   SAY "Line Number:"  SIGL
+   8   SAY "The Line read '" || SOURCELINE(SIGL)"'"
+   9   SAY "The Error was:'" || ERRORTEXT(RC)"'"
+   10  SAY "(Total Lines): "    SOURCELINE()
+   11  SAY "************************************"
+   12  RETURN 0
+OUTPUT----------------------------------------------
+   *** SYNTAX / EXECUTION  ERROR******
+   Line Number: 3
+   The Line read 'IF MyResult THEN SAY "HELLO"'
+   The Error was:'Boolean value not 0 or 1'
+   (Total Lines):  16
+   ************************************
+**
+ValueOfInString  = VALUE( InString , NewValue )
+/* REXX program to show VALUE() */
+   A = 23
+   B = A
+   SAY VALUE(B)
+   --------------------------------
+   23
+**
+/* REXX The SELECT, WHEN, OTHERWISE and NOP instructions  */
+   A = "120"
+   SELECT
+     WHEN A = "100" THEN NOP /* DO NOTHING */
+     WHEN A = "200" THEN SAY "A IS 200"
+     WHEN A = "300" THEN DO
+        SAY "DO A BLOCK OF CODE IF ITS 300
+        END
+     OTHERWISE SAY "NONE ABOVE ARE TRUE"
+     END
+**
+/* REXX program to show the LEAVE instruction   */
+   MaxNum = 10000; MaxLoop = 10 ; A = 2
+   DO Loop = 1 TO MaxLoop
+      B = A * A
+      SAY "Loop1=" Loop  "B =" B
+      A = B
+      If A > MaxNum THEN LEAVE
+     END
+   A = 2
+     DO Loop = 1 TO MaxLoop WHILE A < MaxNum
+     B = A * A
+     SAY "Loop2=" Loop  "B =" B
+     A = B
+     END
+**
+/* REXX program to show ITERATE & FOREVER */
+   A = 0;  Incr = 1; Divis = 4; MaxNum = 10
+   DO FOREVER
+     A = A + Incr
+     IF A = MaxNum THEN DO
+         SAY "HIT LOOP END CONDITION"
+         LEAVE
+         SAY "NEVER EXECUTED" ; END
+     IF (A // Divis) = 0 THEN DO
+         SAY "HERE" A "IS DIVISIBLE BY" Divis
+         ITERATE
+         SAY "NEVER EXECUTED" ; END
+     SAY "A=" A
+     END
+   SAY "REACHED END"
+**
+/* REXX : Internal functions. */
+   SAY "First Line"
+   CALL MyFunction
+   SAY "Last Line"
+   EXIT 0
+   MyFunction:
+   SAY "Welcome to my own function!"
+   RETURN 0
+**
+/* REXX program to show function communication. */
+   CALL Funct1 2
+   SAY "Give the funct1 a" 2 "and you get back a" Result
+   SAY "Give the funct1 a" 4 "and you get back a" Funct1(4)
+   EXIT 0
+   Funct1:
+   ARG Input
+   Code = Input * 3
+   RETURN Code
+**
+line1 = 'The merry wives of Windsor'
+         Parse Var line1 v1 v2 v3 v4 .
+
+         /* v1 receives "The"        */
+         /* v2 receives "merry"      */
+         /* v3 receives "wives"      */
+         /* v4 receives "of"         */
+         /* "Windsor" is discarded   */
+**
+line1 = 'The merry wives of Windsor'
+         Parse Var line1 . v2 . v4 .
+
+         /* "The" is discarded       */
+         /* v2 receives "merry"      */
+         /* "wives" is discarded     */
+         /* v4 receives "of"         */
+         /* "Windsor" is discarded   */
+**
+line1 = 'The merry wives of Windsor'
+         Parse Var line1 v1 line1
+
+         /* v1 receives "The"                       */
+         /* line1 receives "merry wives of Windsor" */
+**
+line1 = 'abcdefghijklmnopqrstuvwxyz'
+         Parse Var line1 1 v1 4 . 20 v2 22 . 26 v3
+
+         /* v1 receives "abc"   */
+         /* v2 receives "tu"    */
+         /* v3 receives "z""    */
+**
+line1 = '11:25:01'
+         Parse Var line1 hh ':' mm ':' ss
+
+         /* hh receives "11"    */
+         /* mm receives "25"    */
+         /* ss receives "01"    */
+**
+animal.0 = 3
+         animal.1 = 'monkey'
+         animal.2 = 'turkey'
+         animal.3 = 'mouse'
+         Do i = 1 To animal.0   /* i takes on the */
+            Say animal.i        /* values 1, 2, 3 */
+            End
+**
+Read a File
+Read from disk, DISKR:
+EXECIO n|* DISKR ddname [LN] [(options [)] ]
+- n is number of lines read; * means all
+- LN is the starting line number
+- Options on next page
+- RC = 2 means End-of-File
+- Data read into the stack or REXX variable(s) (based on options)
+**
+Write to a file
+EXEC10 n|* DISKW ddname [(options [)] ]
+- n is number of lines written; * means all
+- File allocated by ddname and must be allocated before EXECIO.
+- Data written from the stack or REXX variable(s).
+- Writing from stack continues until null line found or null entry made
+from console, if stack exhausted. Writing from a compound variable
+continues until null value or uninitialized variable foun
+**
+Updating a File
+EXECIQ n|* DISKRU ddname [LN] [(options [)] ]
+- n is number of lines read; means all
+- LN should not be set to a value less than current position without
+closing and reopening the file; can cause errors
+**
+EXECIO Options
+STEM name. -- Lines readlwritten to/from stem variables
+"narne.1" to "name.n" ("narne.O"= lines read)
+STRING data -- Data for output, instream on VM EXEC10 crnd
+FINIS -- Close fiie after DISKR, DISKRU, or DISKW
+(aliso available as VM command)
+VAR name --  VM line read/written to/drorn variable
+SKIP -- Skips over coded number of lines; * skips to EOF
+LIFO/FIFO -- Order of lines read into the Data Queue
+NOTYPE Suppress VM I/O error message
+BUFFER Increases VM CP ops area from 8K to 32K
+VM editing options: FIND, LOCATE, AVOID, MARGINS, STRIP, CASE
+**
+IF VAR and STEM are not coded, records are read from or written to the
+Data
+Queue.
+In MVS, only STEM, FINIS, SKIP, LIFO, and FIFO can be coded. If STEM and
+FINIS are coded, FINIS is coded after. Atso, you code SKIP, LIFO, or
+FIFO only
+if you are accessing theD ata Queue.
+**
+//jobcard...
+//ISPF     EXEC  PGM=IKJEFT01
+//SYSEXEC  DD   DSN=your.EXEC,DISP=SHR
+//ISPPLIB  DD   DSN=your.system.ISPPLIB,DISP=SHR
+//ISPSLIB  DD   DSN=your.system.ISPSLIB,DISP=SHR
+//ISPMLIB  DD   DSN=your.system.ISPMLIB,DISP=SHR
+//ISPTLIB  DD    DDNAME=ISPTABL
+//         DD    DSN=your.system.ISPTLIB,DISP=SHR
+//ISPTABL  DD    LIKE=your.system.ISPTLIB,UNIT=VIO
+//ISPPROF  DD    LIKE=your.system.ISPTLIB,UNIT=VIO
+//ISPLOG   DD    SYSOUT=*,RECFM=VA,LRECL=125
+//SYSTSPRT DD    SYSOUT=*
+//SYSTSIN  DD    *
+ISPSTART  CMD(yourexec
+**
+Rexx I/O processing  (a).  Read  routine  and  (b). Write routine   (c).
+Close the file...
+
+READ_CNTL_LIST:
+   "EXECIO * DISKR INPLIST (FINIS"     /* Reads entire Inputfile  &
+Close */
+   DISKR_RC = RC
+  IF DISKR_RC > 0 THEN DO
+     SAY ERROR_MESSAGE_READING  IN_LIST ' RC = ' DISKR_RC
+     EXIT DISKR_RC
+     END
+  IN_CNT = QUEUED()  /* The Queued function returns total rows read from
+input file */
+RETURN  0
+WRITE_OUT_JCL:
+   "EXECIO 1 DISKW OUTPUT1 " /* Write one line to the file */
+   IF RC > 1 THEN DO
+      SAY ERROR_MESSAGE_WRITING  CNTL_FILE ' RC = ' RC
+      EXIT RC
+   END
+RETURN 0
+/* To close the output file. */
+FREE_OUTPUT:
+  "EXECIO 0 DISKW OUTPUT1 (FINIS "
+  "FREE F(OUTPUT1)"
+RETURN 0
+**
+./       ADD   NAME=SASS
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+   ADDRESS ISPEXEC "EDIT DATASET('SYS3.SAS913.SAMPLE')"
+./       ADD   NAME=SCOPY
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('STGE.BATCH.COPY')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "VIEW DATASET('STGE.BATCH.COPY("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=SEQ2PDS
+/* REXX */
+
+record_count = 0
+
+ADDRESS ISPEXEC
+
+SAY 'Enter the dataset name of the sequential equivalent of your PDS:'
+PARSE UPPER PULL dsnseq
+
+"LMINIT DATAID(SEQID) DATASET("dsnseq") ENQ(SHR) ORG(DSORG)"
+zrc = RC
+
+SELECT
+WHEN zrc \= 0
+THEN DO
+       SAY 'ISPF service LMINIT failed for sequential dataset.',
+           ' Return code:' zrc
+       EXIT zrc
+     END
+
+WHEN dsorg \= 'PS'
+THEN DO
+       SAY 'Dataset is not sequential.'
+       EXIT zrc
+     END
+
+OTHERWISE SAY 'ISPF service LMINIT for sequential dataset successful.'
+END /* SELECT */
+
+"LMOPEN DATAID("seqid") OPTION(INPUT) LRECL(LRECL) RECFM(RECFM)"
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'ISPF service LMOPEN failed for sequential dataset.',
+           ' Return code:' zrc
+       SIGNAL Free_Seq
+     END
+ELSE SAY 'ISPF service LMOPEN for sequential dataset successful.'
+
+recfm = SUBSTR(recfm,1,1) SUBSTR(recfm,2,1) SUBSTR(recfm,3,1),
+        SUBSTR(recfm,4,1)
+lrecl = STRIP(lrecl,'L',0)
+
+"LMGET DATAID("seqid") MODE(INVAR) DATALOC(DELIMIT)",
+                       "DATALEN(LENGTH) MAXLEN("lrecl")"
+zrc = RC
+
+SELECT
+WHEN zrc > 8
+THEN DO
+       SAY 'ISPF service LMGET failed for sequential dataset.',
+           ' Return code:' zrc'.'
+       SIGNAL Close_Seq
+     END
+
+WHEN zrc = 8
+THEN DO
+       SAY 'Empty sequential dataset.'
+       SIGNAL Close_Seq
+     END
+
+OTHERWISE
+     IF LEFT(delimit,2) \= './'
+     THEN DO
+            SAY 'Invalid sequential dataset.  The dataset must',
+                'have been created using REXX exec PDSTOSEQ or',
+                'DOSTOSEQ.'
+            SIGNAL Close_Seq
+          END
+END /* SELECT */
+
+/* */
+
+SAY
+Say 'Enter the dataset name of the PDS equivalent of your dataset:'
+PARSE UPPER PULL dsnpds
+
+SAY
+SAY 'Enter the unit name for the PDS equivalent of your dataset:'
+PARSE UPPER PULL unit
+
+SAY
+SAY 'Enter the volume name for the unit or leave blank:'
+PARSE UPPER PULL volume
+
+IF volume \= ''
+THEN volume = 'VOLUME('volume')'
+
+SAY
+SAY 'Enter TSO ALLOCATE command DCB parameters or leave blank:'
+PARSE UPPER PULL dcb
+
+IF dcb = ''
+THEN dcb = 'RECFM('recfm') LRECL('lrecl') LIKE('dsnseq')'
+
+ADDRESS TSO "ALLOC F(SEQTOPDS) DA("dsnpds") NEW CATALOG",
+            "UNIT("unit")" volume "CYLINDERS SPACE(5 2) DIR(50)",
+            "DSORG(PO)" dcb
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'TSO command ALLOCATE failed for PDS dataset.',
+           ' Return code:' zrc
+       SIGNAL Close_Seq
+     END
+
+ADDRESS TSO "FREE F(SEQTOPDS)"
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'TSO command FREE failed for PDS dataset.',
+           ' Return code:' zrc
+       SAY 'Attempting to continue.'
+     END
+ELSE SAY 'PDS dataset allocated successfully.'
+
+"LMINIT DATAID(PDSID) DATASET("dsnpds") ENQ(EXCLU)"
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'ISPF service LMINIT failed for PDS dataset.',
+           ' Return code:' zrc
+       SIGNAL Close_Seq
+     END
+ELSE SAY 'ISPF service LMINIT for PDS successful.'
+
+"LMOPEN DATAID("pdsid") OPTION(OUTPUT)"
+zrc = RC
+
+IF zrc \= 0
+THEN DO
+       SAY 'ISPF service LMOPEN failed for PDS dataset.',
+           ' Return code:' zrc
+       SIGNAL Free_Pds
+     END
+ELSE SAY 'ISPF service LMOPEN for PDS successful.'
+
+/* */
+
+SAY
+
+DO member_loop = 1 UNTIL zrc_lmget = 8
+   DO record_loop = 1
+      "LMGET DATAID("seqid") MODE(INVAR) DATALOC(RECORD)",
+                             "DATALEN(LENGTH) MAXLEN("lrecl")"
+      zrc_lmget = RC
+
+      SELECT
+      WHEN zrc_lmget > 8
+      THEN DO
+             SAY 'ISPF service LMGET failed for sequential dataset.',
+                 ' Return code:' zrc_lmget'.'
+             LEAVE member_loop
+           END
+
+      WHEN zrc_lmget = 8      /* End of sequential dataset, */
+      THEN LEAVE record_loop  /* Add last member.           */
+
+      OTHERWISE
+           DO
+             IF LEFT(record,2) = './'  /* End of member. */
+             THEN LEAVE record_loop    /* Add member.    */
+
+             "LMPUT DATAID("pdsid") MODE(INVAR) DATALOC(RECORD)",
+                                    "DATALEN("length")"
+             zrc = RC
+
+             IF zrc \= 0
+             THEN DO
+                    SAY 'ISPF service LMPUT failed for PDS dataset.'
+                        ' Return code:' zrc'.'
+                    LEAVE member_loop
+                  END
+             ELSE record_count = record_count + 1
+           END
+      END /* SELECT */
+   END record_loop
+
+   PARSE VAR delimit,
+             './' member zlvers '.' +1 zlmod +2,
+                      19 zlcdate +8 28 zlmdate +8 37 zlmtime +5,
+                      43 zlcnorc +5 49 zlinorc +5 55 zlmnorc +5,
+                      61 zluser .
+
+   "LMMADD  DATAID("pdsid") MEMBER("member") STATS(YES)"
+
+   zrc = RC
+
+   SELECT
+   WHEN zrc = 0  /* ok */
+   THEN NOP
+   WHEN zrc = 4  /* duplicate membername */
+   THEN DO
+          "SETMSG MSG(MVS00NI) MSGLOC(dsnseq)"
+          zrc = 0
+        END
+   WHEN zrc = 10 /* no file with data id */
+   THEN zrc = 0
+   WHEN zrc = 12 /* bad stats */
+   THEN DO
+          "LMMADD  DATAID("pdsid") MEMBER("member") STATS(NO)"
+          zrc = RC
+        END
+   WHEN zrc = 14 /* no records written */
+   THEN DO
+          "SETMSG MSG(MVS00OI) MSGLOC(dsnpds)"
+          zrc = 0
+        END
+   WHEN zrc = 16 /* variable error */
+   THEN DO
+          "LMMADD  DATAID("pdsid") MEMBER("member") STATS(NO)"
+          zrc = RC
+        END
+   WHEN zrc = 20 /* severe error */
+   THEN NOP
+   OTHERWISE
+        NOP
+   END /* SELECT */
+
+   IF zrc \= 0
+   THEN DO
+          "SETMSG MSG(MVS00MI) MSGLOC(dsnseq)"
+          LEAVE members
+        END
+
+
+   delimit = record
+END member_loop
+
+/* */
+
+SAY
+SAY member_loop 'members processed.'
+SAY record_count 'records written to PDS dataset.'
+
+"LMCLOSE DATAID("pdsid")"
+
+Free_Pds:
+"LMFREE DATAID("pdsid")"
+
+Close_Seq:
+"LMCLOSE DATAID("seqid")"
+
+Free_Seq:
+"LMFREE DATAID("seqid")"
+
+SAY 'All processing complete.'
+
+EXIT 0
+
+./       ADD   NAME=SIGNAL1
+/* switcharoo.rex */
+  parse arg n .
+  if \ datatype( n, wholenumber ) then
+    signal usagemsg
+  if n < 1 | n > 3 then
+    signal usagemsg
+  signal value n   /* switch to label n ! */
+  3 : say 'three'
+  2 : say 'two'
+  1 : say 'one'
+  return n
+  usagemsg :
+    say 'you did not enter a numeric value between 1 and 3'
+    say 'usage:'
+    say '  rexx switcharoo wholeNumber'
+    exit 99
+./       ADD   NAME=SOUT
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+   ADDRESS ISPEXEC "BROWSE DATASET('JONNALR.SPUFI.OUT')"
+./       ADD   NAME=SQLCD
+   ARG SQLCODE
+   SQLC = D2X(SQLCODE,8)
+   SQLC = X2C(SQLC)
+   SQLCA = 'SQLCA   'X2C(00000088)SQLC||X2C(0000)||COPIES(' ',78)
+   SQLCA = SQLCA||COPIES(X2C(00),24)COPIES(' ',16)
+   TIAR_MSG = X2C(0190)COPIES(' ',400)
+   TEXT_LEN = X2C(00000050)
+   ADDRESS ATTCHPGM 'DSNTIAR SQLCA TIAR_MSG TEXT_LEN'
+   SAY SUBSTR(TIAR_MSG,004,80)
+   SAY SUBSTR(TIAR_MSG,084,80)
+   SAY SUBSTR(TIAR_MSG,164,80)
+./       ADD   NAME=SQRT1
+   /**  REXX -- SHOW TODAY'S DATE  **/
+   ARG THISNUMBER
+      SELECT
+        WHEN THISNUMBER = "" THEN
+          SAY "NO ARGUENT    !"
+        WHEN DATATYPE( THISNUMBER ) <> "NUM" THEN
+          SAY "INVALID NUMBER  !"
+        WHEN THISNUMBER <= 0 THEN
+          SAY "INVALID NUMBER!"
+        OTHERWISE
+        DO
+          THISSQRT = SQRT( THISNUMBER )
+          SAY " THE SQUARE ROOT OF " || THISNUMBER || " IS " || THISSQRT
+          SAY " " || THISSQRT "*" THISSQRT "=" THISSQRT*THISSQRT
+        END /* OTHERWISE */
+      END /* SELECT */
+  EXIT 0
+
+  SQRT: PROCEDURE
+    ARG N
+    ANS = N / 2                   /* INITIAL GUESS AT AN ANSWER  */
+    PREVANS = N                   /* "PREVIOUS ANSWER"           */
+    DO UNTIL PREVANS = ANS        /* NO MORE IMPROVEMENT IS FOUND*/
+       PREVANS = ANS              /* SAVE PREVIOUS ANSWER        */
+       ANS = ( PREVANS + ( N / PREVANS ) ) / 2
+    END
+  RETURN ANS
+./       ADD   NAME=STACK
+ PARSE ARG OPTION
+ MESSAGE = MSG('OFF')
+ TRACE OFF
+    "ISPEXEC SELECT PANEL(ISR@PRIM) NEWAPPL(STK) OPT("OPTION")"
+ RETURN
+./       ADD   NAME=TESTREXX
+     SAY 24 / 32
+     SAY "fred" = "fred"
+     SAY 12 = 13
+     SAY "fred" = "freda"
+./       ADD   NAME=TEST1
+  /* REXX */
+  THEPDS = 'JONNALR.TEST.PDS'
+  X = OUTTRAP('L.')
+  "LISTDS '"THEPDS"' MEMBERS"
+  X = OUTTRAP('OFF')
+  DO LOOP = 7 TO L.0
+    OLDMEM = STRIP(L.LOOP)
+    NEWMEM = '#'OLDMEM
+    "RENAME '"THEPDS"("OLDMEM")' '"THEPDS"("NEWMEM")'"
+    IF RC = 0 THEN SAY OLDMEM NEWMEM
+  END
+./       ADD   NAME=TEST2
+  /* REXX */
+  FILEIN = 'JONNALR.INPUT'
+  RECORD = LINEIN(FILEIN, 1, 1);
+  SAY RECORD
+./       ADD   NAME=VHEC
+ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+ADDRESS ISREDIT
+"MACRO (MEMNAME) NOPROCESS"
+IF MEMNAME = "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.VHEC')"
+   EXIT
+   END
+IF MEMNAME <> "" THEN DO
+   ADDRESS ISPEXEC "EDIT DATASET('JONNALR.TEST.VHEC("MEMNAME")')"
+   EXIT
+   END
+./       ADD   NAME=ZB
+   /* REXX */
+   /*                                             */
+   /*                                             */
+   /* AUTHOR: RAMA MOHAN                          */
+   /*                                             */
+   /* THIS EDIT MACRO ALLOWS THE USER TO BROWSE   */
+   /* THE DATA SET LOCATED ON THE LINE THAT THE   */
+   /* CURSOR IS ON.                               */
+   /*                                             */
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+     /***********************************************/
+     /*   BEGIN PROCESSING                          */
+     /***********************************************/
+     "(ROW,COL) = CURSOR"
+     "(DATA1) = LINE " ROW              /* DATA1 = CURSOR LINE*/
+
+     /**********************************/
+     /* FIND START OF DATA SET NAME    */
+     /**********************************/
+     DSNSTART = POS('DSN=',DATA1)       /* LOOK FOR DSN= */
+
+     IF DSNSTART = 0 THEN DO            /* NO DSN = */
+
+       DSNSTART = POS('DSNAME=',DATA1)  /* LOOK FOR DSNAME= */
+
+       IF DSNSTART = 0 THEN DO          /* NO DSN= OR DSNAME=*/
+
+         "CURSOR = " ROW COL            /* CURSOR POS*/
+
+         IF COL < 1 THEN DSNSTART = 1   /* NEEDED FOR ZB LINE C*/
+
+         ELSE DSNSTART = COL            /* ASSUME CURSOR ON DSN*/
+
+       END
+       ELSE DSNSTART = DSNSTART + 7
+
+     END /* IF DSNSTART = 0 */
+     ELSE DSNSTART = DSNSTART + 4
+
+     /**********************************/
+     /* FIND END OF DATA SET NAME      */
+     /**********************************/
+     DSNEND = POS(',',DATA1,DSNSTART)
+
+     IF DSNEND = 0 THEN DO
+
+       DSNEND = POS(' ',DATA1,DSNSTART)
+
+       IF DSNEND = 0 THEN DO
+
+         ZEDSMSG = 'NO END OF DSN'
+         ZEDLMSG = 'THE DATA SET NAME IS NOT TERMINATED WITH A' ,
+                   'SPACE OR COMMA.'
+         ADDRESS ISPEXEC "SETMSG MSG(ISRZ001)"
+
+         "CURSOR = " ROW COL
+
+         EXIT 8
+       END  /* IF DSNEND = 0 */
+       ELSE DSNEND = DSNEND - 1
+
+     END /* IF DSNEND = 0 */
+     ELSE DSNEND = DSNEND - 1
+
+     /**********************************/
+     /* BROWSE THE DATA SET            */
+     /**********************************/
+     DSN = SUBSTR(DATA1,DSNSTART,DSNEND-DSNSTART+1)
+
+     ADDRESS ISPEXEC "BROWSE DATASET('"DSN"')"
+     IF RC <> 0 THEN ADDRESS ISPEXEC "SETMSG MSG("ZERRMSG")"
+     "CURSOR = " ROW COL /* PUT CURSOR BACK TO LAST POSITION        */
+     EXIT 0
+./       ADD   NAME=ZE
+   /* REXX */
+   /*                                             */
+   /*                                             */
+   /* AUTHOR: RAMA MOHAN                          */
+   /*                                             */
+   /* THIS EDIT MACRO ALLOWS THE USER TO BROWSE   */
+   /* THE DATA SET LOCATED ON THE LINE THAT THE   */
+   /* CURSOR IS ON.                               */
+   /*                                             */
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+     /***********************************************/
+     /*   BEGIN PROCESSING                          */
+     /***********************************************/
+     "(ROW,COL) = CURSOR"
+     "(DATA1) = LINE " ROW              /* DATA1 = CURSOR LINE*/
+
+     /**********************************/
+     /* FIND START OF DATA SET NAME    */
+     /**********************************/
+     DSNSTART = POS('DSN=',DATA1)       /* LOOK FOR DSN= */
+
+     IF DSNSTART = 0 THEN DO            /* NO DSN = */
+
+       DSNSTART = POS('DSNAME=',DATA1)  /* LOOK FOR DSNAME= */
+
+       IF DSNSTART = 0 THEN DO          /* NO DSN= OR DSNAME=*/
+
+         "CURSOR = " ROW COL            /* CURSOR POS*/
+
+         IF COL < 1 THEN DSNSTART = 1   /* NEEDED FOR ZB LINE C*/
+
+         ELSE DSNSTART = COL            /* ASSUME CURSOR ON DSN*/
+
+       END
+       ELSE DSNSTART = DSNSTART + 7
+
+     END /* IF DSNSTART = 0 */
+     ELSE DSNSTART = DSNSTART + 4
+
+     /**********************************/
+     /* FIND END OF DATA SET NAME      */
+     /**********************************/
+     DSNEND = POS(',',DATA1,DSNSTART)
+
+     IF DSNEND = 0 THEN DO
+
+       DSNEND = POS(' ',DATA1,DSNSTART)
+
+       IF DSNEND = 0 THEN DO
+
+         ZEDSMSG = 'NO END OF DSN'
+         ZEDLMSG = 'THE DATA SET NAME IS NOT TERMINATED WITH A' ,
+                   'SPACE OR COMMA.'
+         ADDRESS ISPEXEC "SETMSG MSG(ISRZ001)"
+
+         "CURSOR = " ROW COL
+
+         EXIT 8
+       END  /* IF DSNEND = 0 */
+       ELSE DSNEND = DSNEND - 1
+
+     END /* IF DSNEND = 0 */
+     ELSE DSNEND = DSNEND - 1
+
+     /**********************************/
+     /* BROWSE THE DATA SET            */
+     /**********************************/
+     DSN = SUBSTR(DATA1,DSNSTART,DSNEND-DSNSTART+1)
+
+     ADDRESS ISPEXEC "EDIT DATASET('"DSN"')"
+     IF RC <> 0 THEN ADDRESS ISPEXEC "SETMSG MSG("ZERRMSG")"
+     "CURSOR = " ROW COL /* PUT CURSOR BACK TO LAST POSITION        */
+     EXIT 0
+./       ADD   NAME=ZV
+   /* REXX */
+   /*                                             */
+   /*                                             */
+   /* AUTHOR: RAMA MOHAN                          */
+   /*                                             */
+   /* THIS EDIT MACRO ALLOWS THE USER TO BROWSE   */
+   /* THE DATA SET LOCATED ON THE LINE THAT THE   */
+   /* CURSOR IS ON.                               */
+   /*                                             */
+   ADDRESS ISREDIT
+   "MACRO"
+   ADDRESS ISPEXEC "CONTROL ERRORS RETURN"
+     /***********************************************/
+     /*   BEGIN PROCESSING                          */
+     /***********************************************/
+     "(ROW,COL) = CURSOR"
+     "(DATA1) = LINE " ROW              /* DATA1 = CURSOR LINE*/
+
+     /**********************************/
+     /* FIND START OF DATA SET NAME    */
+     /**********************************/
+     DSNSTART = POS('DSN=',DATA1)       /* LOOK FOR DSN= */
+
+     IF DSNSTART = 0 THEN DO            /* NO DSN = */
+
+       DSNSTART = POS('DSNAME=',DATA1)  /* LOOK FOR DSNAME= */
+
+       IF DSNSTART = 0 THEN DO          /* NO DSN= OR DSNAME=*/
+
+         "CURSOR = " ROW COL            /* CURSOR POS*/
+
+         IF COL < 1 THEN DSNSTART = 1   /* NEEDED FOR ZB LINE C*/
+
+         ELSE DSNSTART = COL            /* ASSUME CURSOR ON DSN*/
+
+       END
+       ELSE DSNSTART = DSNSTART + 7
+
+     END /* IF DSNSTART = 0 */
+     ELSE DSNSTART = DSNSTART + 4
+
+     /**********************************/
+     /* FIND END OF DATA SET NAME      */
+     /**********************************/
+     DSNEND = POS(',',DATA1,DSNSTART)
+
+     IF DSNEND = 0 THEN DO
+
+       DSNEND = POS(' ',DATA1,DSNSTART)
+
+       IF DSNEND = 0 THEN DO
+
+         ZEDSMSG = 'NO END OF DSN'
+         ZEDLMSG = 'THE DATA SET NAME IS NOT TERMINATED WITH A' ,
+                   'SPACE OR COMMA.'
+         ADDRESS ISPEXEC "SETMSG MSG(ISRZ001)"
+
+         "CURSOR = " ROW COL
+
+         EXIT 8
+       END  /* IF DSNEND = 0 */
+       ELSE DSNEND = DSNEND - 1
+
+     END /* IF DSNEND = 0 */
+     ELSE DSNEND = DSNEND - 1
+
+     /**********************************/
+     /* BROWSE THE DATA SET            */
+     /**********************************/
+     DSN = SUBSTR(DATA1,DSNSTART,DSNEND-DSNSTART+1)
+
+     ADDRESS ISPEXEC "VIEW DATASET('"DSN"')"
+     IF RC <> 0 THEN ADDRESS ISPEXEC "SETMSG MSG("ZERRMSG")"
+     "CURSOR = " ROW COL /* PUT CURSOR BACK TO LAST POSITION        */
+     EXIT 0
+
