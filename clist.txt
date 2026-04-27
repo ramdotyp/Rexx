@@ -1,0 +1,1495 @@
+//* this will do the compress
+//COMPRESS EXEC PGM=IEBCOPY
+//SYSPRINT  DD  SYSOUT=*
+//SYSIN     DD  *
+ COPY INDD=INPDS,OUTDD=INPDS
+/*
+//INPDS     DD DSN=library-to-be-compressed,DISP=SHR
+//*
+//* if compress fails, send tso message 
+//         IF (RC GT 0) THEN
+//TSOBATCH EXEC PGM=IKJEFT1A,DYNAMNBR=200,COND=(0,LT)
+//SYSPRINT DD   SYSOUT=*
+//SYSTSPRT DD   SYSOUT=*
+//SYSTSIN  DD *
+PROFILE PREFIX(your-id)
+SEND 'COMPRESS FAILED library-to-be-compressed' USER(your-id) LOGON WAIT
+//        ELSE
+//ERASE    EXEC PGM=IEFBR14,COND=(0,LE)
+//OUTPDS   DD  DSN=your-id.name-of-backup-lib,DISP=(MOD,DELETE),
+//         UNIT=SYSDA,SPACE=(TRK,0)
+//        ENDIF
+
+ Example of Copying a PDS
+
+
+//* COPY ONE PDS TO ANOTHER DO NOT REPLACE LIKE-NAMED MEMBERS
+//LIBCOPY EXEC PGM=IEBCOPY
+//SYSPRINT DD SYSOUT=*
+//SYSUT2   DD UNIT=SYSDA,SPACE=(CYL,(3,3))
+//SYSUT3   DD UNIT=SYSDA,SPACE=(CYL,(3,3))
+//SYSUT4   DD UNIT=SYSDA,SPACE=(CYL,(3,3))
+//INLIB    DD DSN=library-containing-members,DISP=SHR
+//OUTLIB   DD DSN=library-to-put-members-in,DISP=SHR
+//SYSIN    DD *
+ COPY INDD=INLIB,OUTDD=OUTLIB
+/*
+//* OPTIONAL THINGS:
+//*
+//* TO COPY BUT EXCLUDE TWO MEMBERS:
+//* COPY INDD=INLIB,OUTDD=OUTLIB
+//* EXCLUDE MEMBER=(m1,m2)
+//*
+//* TO COPY AND REPLACE:
+//* COPY INDD=((INLIB,R)),OUTDD=OUTLIB
+
+//*iebcopy to copy a pds
+//*in:  pds
+//*out: pds
+//*copy only members named MEM1 and MEM2
+//*do not replace those members if they exist in the output pds
+//IEBCOPY   EXEC PGM=IEBCOPY
+//SYSPRINT  DD   SYSOUT=*
+//SYSIN     DD   *
+ COPY INDD=(INPDS),OUTDD=OUTPDS
+ SELECT MEMBER=MEM1
+ SELECT MEMBER=MEM2
+/*
+//*
+//*
+//*
+//*iebcopy to copy a pds
+//*in:  pds
+//*out: pds
+//*copy only members named MEM1 and MEM2
+//*replace those members if they exist in the output pds
+//IEBCOPY   EXEC PGM=IEBCOPY
+//SYSPRINT  DD   SYSOUT=*
+//SYSIN     DD   *
+ COPY INDD=((INPDS,R)),OUTDD=OUTPDS
+ SELECT MEMBER=MEM1
+ SELECT MEMBER=MEM2
+/*
+
+ IEFBR14
+
+
+Using IEFBR14 to delete a file. If the file is not found,
+there will be no error message and no high return code. 
+
+//ERASE    EXEC PGM=IEFBR14
+//OUTPDS    DD DSN=your-id.name-of-backup-lib,DISP=(MOD,DELETE),
+//          UNIT=SYSDA,SPACE=(TRK,0)
+//*
+
+Using IEFBR14 to avoid deleting and reallocating a file.
+If you run a job frequently, and it needs the same
+output dataset each time, you can use this JCL.
+
+It finds the dataset, if it already exists. 
+Then it clobbers it, avoiding the overhead of reallocating.
+Note that the disposition on the step that actually uses
+the file, later in the job, must be (OLD,CATLG)
+
+If the dataset doesn't exist, it is created.
+
+//FINDPASS EXEC PGM=IEFBR14                                
+//DD1      DD   DSN=dsn-to-be-used-later-in-job,           
+//         UNIT=SYSDA,SPACE=(TRK,(5,5)),DISP=(MOD,PASS),   
+//         LRECL=133,RECFM=FB,BLKSIZE=27930                
+//*                                                        
+
+AMBLIST - Show Load Module Attributes
+
+
+
+//* SHOW LOAD MODULE ATTRIBUTES
+//AMBLIST  EXEC PGM=AMBLIST
+//SYSPRINT DD  SYSOUT=*
+//SYSIN    DD *
+ LISTIDR  DDN=SYSLMOD,MEMBER=program-name GIVES ATTRIBUTES
+
+ LISTLOAD DDN=SYSLMOD,MEMBER=program-name GIVES ATTRIBUTES AND CONTENTS
+/*
+//SYSLMOD  DD DSN=library-the-program-is-in,DISP=SHR
+
+
+ SORT Examples
+
+
+//*  to sort
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+* sort by name 
+ SORT FIELDS=(10,9,CH,A),DYNALLOC=(SYSDA,6),FILSZ=E2000
+/*
+//* END OF JOB
+ 
+  //* sort and do totals
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+* sort by state
+* sum phone number
+ SORT FIELDS=(19,2,CH,A),DYNALLOC=(SYSDA,6),FILSZ=E2000
+ SUM FIELDS=(1,7,ZD)
+* ZD is zoned decimal. signed or unsigned
+* PD packed decimal.  BI Binary
+/*
+//* END OF JOB
+ 
+
+//*  to sort and shift fields
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD * number in column 1, name in 10, state in 19
+* sort by name (name is now in 1)
+ SORT  FIELDS=(01,09,CH,A),DYNALLOC=(SYSDA,6),FILSZ=E2000
+ INREC FIELDS=(01:10,09,   move name from 10 to 1
+               10:01,07)   move number from 1 to 10
+* inrec moves data before sorting starts
+/*
+//* END OF JOB
+
+
+ //*  to sort and shift fields
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD *   number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+* sort by name 
+ SORT   FIELDS=(10,09,CH,A),DYNALLOC=(SYSDA,6),FILSZ=E2000
+ OUTREC FIELDS=(01:10,09,   move name from 10 to 1
+               10:01,07)   move number from 1 to 10
+* outrec moves data after sorting ends
+/*
+//* END OF JOB
+ 
+
+//*  PLAIN COPY
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+ SORT FIELDS=COPY
+/*
+//* END OF JOB
+//*    COPY BUT SKIP 3 RECORDS
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+ SORT FIELDS=COPY,SKIPREC=3
+/*
+
+
+
+//*    COPY. START WITH 4TH RECORD. STOP AFTER PRINTING 2 RECORDS
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+ SORT FIELDS=COPY,SKIPREC=3,STOPAFT=2  STOP AFTER PRINTING 2
+/*
+
+
+//* COPY BUT ONLY IF LITERAL CT IS IN COLUMN 19 OF DATA
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+ SORT FIELDS=COPY                 COPY BUT
+ INCLUDE COND=(19,2,CH,EQ,C'CT')  ONLY IF CT IN COL 19
+/*
+
+
+//*    COPY BUT NOT IF LITERAL CT IS IN COLUMN 19 OF INPUT
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+ SORT FIELDS=COPY                 COPY BUT
+ OMIT    COND=(19,2,CH,EQ,C'CT')  NOT  IF CT IN COL 19
+/*
+
+
+
+//* COPY. INCLUDE RECORDS WITH LITERAL CT IN COLUMN 19,
+//*       OR LITERAL J IN COLUMN 10
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+ SORT FIELDS=COPY                 USING AN OR
+*                                 COPY IF CT IN COL 19
+*                                 OR J IN COL 10
+ INCLUDE COND=(19,2,CH,EQ,C'CT',OR,10,1,CH,EQ,C'J')
+* AND WORKS TOO. ALSO X'C1' FOR A
+/*
+
+
+//* COPY INPUT FILE TO OUTPUT FILE BUT MOVE AS FOLLOWS
+//* PUT THIS IN OUTPUT COLUMN 20:  9 CHARACTERS STARTING IN COLUMN 1
+//*                    COLUMN 40: 16 CHARACTERS STARTING IN COLUMN 10
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+* COPY INPUT FILE TO OUTPUT FILE BUT MOVE AS FOLLOWS
+* PUT THIS IN OUTPUT COLUMN 20:  9 CHARACTERS STARTING IN COLUMN 1
+*                    COLUMN 40: 16 CHARACTERS STARTING IN COLUMN 10
+ SORT FIELDS=COPY
+ INREC FIELDS=(20:1,09,40:10,16)
+/*
+
+//* COPY INPUT FILE TO OUTPUT FILE BUT MOVE AS FOLLOWS
+//* PUT THIS IN OUTPUT COLUMN 20:  9 CHARACTERS STARTING IN COLUMN 1
+//*                    COLUMN 40: 16 CHARACTERS STARTING IN COLUMN 10
+//* include only records from CT
+//SORTIT EXEC PGM=SORT,PARM=’ABEND’
+//SYSOUT DD SYSOUT=*
+//SORTIN DD * number in column 1, name in 10, state in 19
+9283873  JOAN     CT
+7023232  JANE     CN
+8432343  MARIO    MA
+5549023  JILL     CT
+6998781  JENNIFER VT
+8432343  MURIEL   RI
+/*
+//SORTOUT DD SYSOUT=*
+//SYSIN   DD *
+* COPY INPUT FILE TO OUTPUT FILE BUT MOVE AS FOLLOWS
+* PUT THIS IN OUTPUT COLUMN 20:  9 CHARACTERS STARTING IN COLUMN 1
+*                    COLUMN 40: 16 CHARACTERS STARTING IN COLUMN 10
+ SORT FIELDS=COPY
+ INREC FIELDS=(20:1,09,40:10,16)
+ INCLUDE COND=(19,2,CH,EQ,C'CT') only if CT in column 19
+* include condition looks at input columns before INREC or OUTREC work
+/*
+
+
+//*
+//*syncsort to eliminate duplicates
+//* in:  seq
+//* out: seq
+//SYNCSORT  EXEC PGM=SYNCSORT
+//SYSOUT    DD   SYSOUT=*
+//SORTIN   DD   DISP=SHR,    <-the input
+//         DSN=the.input.dsn
+//SORTOUT  DD   DISP=(NEW,CATLG), <-the output
+//         UNIT=SYSDA,LIKE=the.input.dsn,
+//         SPACE=(TRK,(1,1),RLSE)
+//SYSIN    DD *
+ SORT FIELDS=(1,80,CH,A)
+ SUM FIELDS=NONE
+/*
+//*
+//*
+//*
+//*syncsort to include records on a condition
+//*uses OUTREC to construct the output record
+//*from fields on the input record
+//* in:  seq
+//* out: seq
+//SYNCSORT  EXEC PGM=SYNCSORT
+//SYSOUT    DD   SYSOUT=*
+//SORTIN   DD   DISP=SHR,    <-the input
+//         DSN=the.input.dsn
+//SORTOUT  DD   DISP=(NEW,CATLG), <-the output
+//         UNIT=SYSDA,LIKE=the.input.dsn,
+//         SPACE=(TRK,(1,1),RLSE)
+//SYSIN    DD *
+ SORT FIELDS=(1,80,CH,A)
+ INCLUDE COND=((51,7,CH,EQ,C'STRING1'),OR,
+               (51,7,CH,EQ,C'STRING2'))
+ OUTREC FIELDS=(01:11,08,
+                20:51,19)
+* a literal may be used in the outrec:
+* OUTREC FIELDS=(C'!',
+*        20:C'ABCD')
+ SUM FIELDS=NONE
+/*
+//*
+//*
+Fileaid
+
+
+//*
+//*
+//* FILEAID TO DROP LINES
+//* IN:  SEQ
+//* OUT: SEQ
+//* COPY A FILE BUT DROP LINES WITH A 1 IN POSITION 1
+//*               OR MINUTES EXECUTION TIME ANYWHERE ON THE LINE
+//FILEAI1  EXEC PGM=FILEAID
+//SYSPRINT DD   SYSOUT=*
+//SYSLIST  DD   SYSOUT=*
+//DD01     DD   *
+1 DROP THIS RECORD
+X DON'T DROP THIS ONE
+Z MINUTES EXECUTION TIME WILL BE DROPPED
+/*
+//DD01O    DD   SYSOUT=*
+//SYSIN    DD *
+$$DD01     DROP OUT=0,
+  IF=(01,EQ,C'1'),
+  ORIF=(01,00,C'MINUTES EXECUTION TIME')
+/*
+
+//*
+//* FILEAID TO COPY MEMBERS CONTAINING A DATA STRING
+//* IN:  PDS
+//* OUT: PDS
+//* COPY ONLY MEMBERS CONTAINING PGM=MYPROG ANYWHERE ON THE LINE
+//*           AND // AND EXEC ON THE SAME LINE
+//FILEAI2  EXEC PGM=FILEAID
+//SYSPRINT DD   SYSOUT=*
+//SYSLIST  DD   SYSOUT=*
+//DD01     DD  DATA
+DONT COPY ME
+// EXEC COPY ME PGM=MYPROG
+NO COPY ME
+/*
+//DD01O    DD   DISP=(NEW,CATLG), <-the output
+//         UNIT=SYSDA,LRECL=80,RECFM=FB,BLKSIZE=27920,
+//         SPACE=(TRK,(1,1,10),RLSE)
+//SYSIN    DD *
+$$DD01     COPYMEM OUT=0,
+  IF=(01,00,C'PGM=MYPROG'),
+  AND=(01,03,C'//'),AND=(01,00,C'EXEC')
+/*
+//*
+
+//*
+//* Fabat02.jcl  sample JCL for fileaid batch
+//* COPY ALL RECORDS. IF THERE'S A 8 IN COLUMN 5, PUT A G IN COL 5
+//*
+//STEP1    EXEC PGM=FILEAID
+//SYSPRINT DD SYSOUT=*
+//SYSLIST  DD SYSOUT=*
+//SYSTOTAL DD SYSOUT=*
+//DD01     DD *
+000006 RECORD 1 LARRY
+000054 RECORD 2 CURLY
+000041 RECORD 3 MOE
+000028 RECORD 4 LOU
+000082 RECORD 5 LAUREL
+/*
+//DD01O    DD SYSOUT=*
+//SYSIN    DD *
+$$DD01 COPYALL IF=(5,EQ,C'8'),R=(5,C'G')
+/*
+//* COPY ALL RECORDS. IF THERE'S A 8 IN COLUMN 5, PUT A G IN COL 5
+
+
+//*
+//* FILEAID TO COPY A FILE
+//* IN:  SEQ
+//* OUT: SEQ
+//* JUST PLAIN COPY
+//FILEAI3  EXEC PGM=FILEAID
+//SYSPRINT DD   SYSOUT=*
+//SYSLIST  DD   SYSOUT=*
+//DD01     DD   *
+GABE
+LINDA
+//DD01O    DD   SYSOUT=*
+//SYSIN    DD *
+$$DD01     COPYALL
+/*
+//*
+//*
+//* FILEAID TO COPY A FILE
+//* PUT AN EXCLAMATION IN POSITION 1
+//* SHIFT THE REMAINDER OF THE LINE OVER BY 1
+//* IN:  SEQ
+//* OUT: SEQ
+//FILEAI4  EXEC PGM=FILEAID
+//SYSPRINT DD   SYSOUT=*
+//SYSLIST  DD   SYSOUT=*
+//DD01     DD   *
+HELLO THERE
+AND A GOOD DAY TO YOU
+//DD01O    DD   SYSOUT=*
+//SYSIN    DD *
+$$DD01     COPYALL MOVE=(1,C'!'),
+  MOVE=(2,79,1)
+/*
+//*
+//* FILEAID TO COPY A FILE AND CHANGE A DATA STRING
+//* REPLACES ALL OCCURENCES OF ABCD WITH WXYZ
+//* IN:  SEQ
+//* OUT: SEQ
+//FILEAI5  EXEC PGM=FILEAID
+//SYSPRINT DD   SYSOUT=*
+//SYSLIST  DD   SYSOUT=*
+//DD01     DD   *
+HELLO NO CHANGE HERE
+ABCD CHANGE ME
+ABCDEF CHANGE ME TOO
+//DD01O    DD   SYSOUT=*
+//SYSIN    DD *
+$$DD01     COPYALL REPLALL=(1,0,C'ABCD',C'WXYZ')
+/*
+
+//*
+
+//* FILEAID TO COPY A FILE AND CHANGE A DATA STRING
+//* IF POSITION 1 HAS ./ CHANGE THEM TO !/
+//* IN:  SEQ
+//* OUT: SEQ
+//FILEAI6  EXEC PGM=FILEAID
+//SYSPRINT DD   SYSOUT=*
+//SYSLIST  DD   SYSOUT=*
+//DD01     DD   *
+./ I'LL BE CHANGED
+/. I WON'T BE
+//DD01O    DD   SYSOUT=*
+//SYSIN    DD *
+$$DD01     COPYALL IF=(1,EQ,C'./'),R=(1,C'!/')
+/*
+//*
+//*
+//* FILEAID TO COPY A FILE AND DROP LINES
+//* IF A LINE CONTAINS STRING1, AND AB IN COLUMN: 1 DROP IT
+//* ORIF IT CONTAINS STRING2, AND CD IN COLUMN1: DROP IT
+//* IN:  SEQ
+//* OUT: SEQ
+//FILEAI7  EXEC PGM=FILEAID
+//SYSPRINT DD   SYSOUT=*
+//SYSLIST  DD   SYSOUT=*
+//DD01     DD   *
+AB STRING1 I'LL BE DROPPED
+ZZ STRING1 I WON'T BE DROPPED
+AB STRING2 I WON'T BE DROPPED
+CD STRING2 I WILL BE DROPPED
+//DD01O    DD   SYSOUT=*
+//SYSIN    DD *
+$$DD01     DROP IF=(1,0,C'STRING1'),AND=(1,EQ,C'AB'),
+     ORIF=(1,0,C'STRING2'),AND=(1,EQ,C'CD')
+/*
+//*
+
+//*
+
+//*
+//*
+//* fileaid to copy a library
+//* in:  pds
+//* out: pds
+//* just plain copy a library, all members
+//FILEAID  EXEC PGM=FILEAID
+//SYSPRINT DD   SYSOUT=*
+//SYSLIST  DD   SYSOUT=*
+//DD01     DD   DISP=SHR,    <-the input
+//         DSN=the.input.dsn
+//DD01O    DD   DISP=(NEW,CATLG), <-the output
+//         UNIT=SYSDA,LIKE=the.input.dsn,
+//         SPACE=(TRK,(1,1,10),RLSE)
+//SYSIN    DD *
+$$DD01     COPYMEM,OUT=0
+/*
+
+//* Fabat05.jcl  sample JCL for fileaid batch
+//* COPY ALL RECORDS. PUT FIRST 3 CHARS OF NAME INTO COL 1
+//* FOLLOWED BY REST OF INPUT RECORD (77 CHARACTERS)
+//*
+//STEP1    EXEC PGM=FILEAID
+//SYSPRINT DD SYSOUT=*
+//SYSLIST  DD SYSOUT=*
+//SYSTOTAL DD SYSOUT=*
+//DD01 DD *
+000006 RECORD 1 LARRY
+000054 RECORD 2 CURLY
+000041 RECORD 3 MOE
+000028 RECORD 4 LOU
+000082 RECORD 5 LAUREL
+/*
+//DD01O DD SYSOUT=*
+//SYSIN DD *
+$$DD01 COPYALL MOVE=(1,3,17),MOVE=(4,77,1)
+/*
+//* COPY ALL RECORDS. PUT FIRST 3 CHARS OF NAME INTO COL 1
+//* FOLLOWED BY REST OF INPUT RECORD (77 CHARACTERS)
+
+
+//* Fabat06.jcl  sample JCL for fileaid batch
+//* COPY ALL RECORDS. REPLACE FIRST CHARACTER BY X
+//*
+//STEP1    EXEC PGM=FILEAID
+//SYSPRINT DD SYSOUT=*
+//SYSLIST  DD SYSOUT=*
+//SYSTOTAL DD SYSOUT=*
+//DD01     DD *
+000006 RECORD 1 LARRY
+000054 RECORD 2 CURLY
+000041 RECORD 3 MOE
+000028 RECORD 4 LOU
+000082 RECORD 5 LAUREL
+/*
+//DD01O    DD SYSOUT=*
+//SYSIN    DD *
+$$DD01 COPYALL REPL=(1,C'X')
+/*
+//* COPY ALL RECORDS. REPLACE FIRST CHARACTER BY X
+//*
+
+//* Fabat07.jcl  sample JCL for fileaid batch
+//* COPY ALL RECORDS. REPLACE ANY L IN COLUMN 17 BY A P
+//*
+//STEP1    EXEC PGM=FILEAID
+//SYSPRINT DD SYSOUT=*
+//SYSLIST  DD SYSOUT=*
+//SYSTOTAL DD SYSOUT=*
+//DD01     DD *
+000006 RECORD 1 LARRY
+000054 RECORD 2 CURLY
+000041 RECORD 3 MOE
+000028 RECORD 4 LOU
+000082 RECORD 5 LAUREL
+/*
+//DD01O    DD SYSOUT=*
+//SYSIN    DD *
+$$DD01 COPYALL REPL=(17,EQ,C'L',C'P')
+/*
+//* COPY ALL RECORDS. REPLACE ANY L IN COLUMN 17 BY A P
+
+//* Fabat08.jcl  sample JCL for fileaid batch
+//* COPY ALL RECORDS. REPLACE FIRST L            BY A P
+//*
+//STEP1    EXEC PGM=FILEAID
+//SYSPRINT DD SYSOUT=*
+//SYSLIST  DD SYSOUT=*
+//SYSTOTAL DD SYSOUT=*
+//DD01     DD *
+000006 RECORD 1 LARRY
+000054 RECORD 2 CURLY
+000041 RECORD 3 MOE
+000028 RECORD 4 LOU
+000082 RECORD 5 LAUREL
+/*
+//DD01O    DD SYSOUT=*
+//SYSIN    DD *
+$$DD01 COPYALL REPL=(1,0,C'L',C'P')
+/*
+//* COPY ALL RECORDS. REPLACE FIRST L            BY A P
+//*
+
+//**************************************************************************
+//* Fabat09.jcl  sample JCL for fileaid batch
+//* COPY ALL RECORDS. REPLACE ALL L'S          BY A P'S
+//*
+//STEP1    EXEC PGM=FILEAID
+//SYSPRINT DD SYSOUT=*
+//SYSLIST  DD SYSOUT=*
+//SYSTOTAL DD SYSOUT=*
+//DD01     DD *
+000006 RECORD 1 LARRY
+000054 RECORD 2 CURLY
+000041 RECORD 3 MOE
+000028 RECORD 4 LOU
+000082 RECORD 5 LAUREL
+/*
+//DD01O    DD SYSOUT=*
+//SYSIN    DD *
+$$DD01 COPYALL REPLALL=(1,0,C'L',C'P')
+/*
+//* COPY ALL RECORDS. REPLACE ALL L'S          BY A P'S
+
+
+//* Fileaid to copy all records 
+//* move the whole input record to the output record                  
+//* move an ! into column 3                                           
+//*
+//*                                                              
+//* if there's the word GABE in column 12 of input,              
+//*     move a G into column 3 and move a G into column 5        
+//*                                                              
+//* if there's the word LINDA in column 12 of input,             
+//*     move a L into column 3 and move a B into column 5        
+//*
+//FILEAID  EXEC PGM=FILEAID                                           
+//SYSLIST  DD SYSOUT=*                                                
+//DD01     DD DSN=input-file,                                         
+//         DISP=SHR                                                   
+//DD01O    DD   DSN=output-file,                                      
+//         DISP=(NEW,CATLG),                                          
+//         UNIT=SYSDA,                                                
+//         LRECL=80,RECFM=FB,                                         
+//         SPACE=(TRK,(10,5),RLSE)                                    
+//*                                                                   
+//SYSIN   DD *                                                        
+$$DD01  COPYALL OUT=0,                                                
+        MOVE=(01,80,01),              MOVE WHOLE RECORD. RECL IS 80   
+        MOVE=(03,C'!'),               MOVE AN ! INTO COLUMN 3         
+        IF=(12,EQ,C'GABE'),MOVE=(03,C'G'),MOVE=(05,C'G'),             
+        IF=(12,EQ,C'LINDA'),MOVE=(03,C'L'),MOVE=(05,C'B')             
+/*
+
+
+////////////////////////
+/* REXX */                                                                      
+/*                           */                                                 
+/* AUTHOR: MARK ZELDEN       */                                                 
+/* Last Updated 02/16/2007   */                                                 
+/* Trace ?R */                                                                  
+Address ISREDIT                                                                 
+"MACRO (parm col1 col2)"                                                        
+ /* Address ISPEXEC "CONTROL ERRORS RETURN"  */                                 
+If pos('&',parm) <> 0 then do                                                   
+  parmx = Translate(parm) /* upper case                  */                     
+  parmx = C2X(parmx)      /* change to hex for seek/find */                     
+  amp = 'Y'                                                                     
+End                                                                             
+  /* check for numeric column numbers      */                                   
+  If col1 <> '' then do                                                         
+    If Datatype(col1,Number) <> 1 then do                                       
+      zedsmsg = 'START COLUMN NOT NUMERIC'                                      
+      zedlmsg = 'THE STARTING COLUMN FOR THE',                                  
+                'SEARCH MUST BE NUMERIC.'                                       
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If col2 = '' then col2 = col1                                               
+  End                                                                           
+  If col2 <> '' then do                                                         
+    If Datatype(col2,Number) <> 1 then do                                       
+      zedsmsg = 'END COLUMN NOT NUMERIC'                                        
+      zedlmsg = 'THE ENDING COLUMN FOR THE',                                    
+                'SEARCH MUST BE NUMERIC.'                                       
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If col2 < col1 then do                                                      
+      zedsmsg = 'END COL < START COL'                                           
+      zedlmsg = 'THE ENDING COLUMN MUST BE GREATER THAN OR',                    
+                'EQUAL TO THE STARTING COLUMN.'                                 
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If Length(Strip(Translate(parm,'','"'''''))) ,                              
+      > COL2-COL1+1 then do                                                     
+      zedsmsg = 'PARM TOO LONG'                                                 
+      zedlmsg = 'THE STRING WILL NOT FIT BETWEEN THE',                          
+                'SPECIFIED COLUMNS.'                                            
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    "(width) = DATA_WIDTH "   /* length of line       */                        
+    width = Format(width)     /* remove leading zeros */                        
+    If col1 < 1 | col2 < 1 | col1 > width | col2 > width then do                
+      zedsmsg = 'INVALID COLUMN NUMBER'                                         
+      zedlmsg = 'ALL COLUMN SPECIFICATIONS MUST BE' ,                           
+                'BETWEEN 1 AND' width                                           
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+  End                                                                           
+ /* "(FIRSTLN,LASTLN) = DISPLAY_LINES"          */                              
+"(lastln) = LINENUM .ZLAST"                                                     
+If AMP = 'Y' then "SEEK x'"parmx"'" col1 col2" FIRST"                           
+  Else "SEEK "parm col1 col2" FIRST"                                            
+   If rc = 0  then do                                                           
+      "EXCLUDE ALL"                                                             
+      If AMP = 'Y' then do                                                      
+        "FIND x'"parmx"'" col1 col2" ALL"                                       
+        "SEEK x'"parmx"'" col1 col2" ALL"                                       
+      End                                                                       
+      Else do                                                                   
+        "FIND "parm col1 col2" ALL"                                             
+        "SEEK "parm col1 col2" ALL"                                             
+      End                                                                       
+      "DELETE ALL X"                                                            
+      "(count,lines) = SEEK_COUNTS"                                             
+       count = Format(count)                                                    
+       lines = Format(lines)                                                    
+       del = lastln-lines                                                       
+       parm = Translate(parm) /* upper case */                                  
+       zedsmsg = del' LINES DELETED'                                            
+       zedlmsg = count 'OCCURRENCES OF "'parm'" WERE KEPT',                     
+                  'ON 'lines 'LINES - 'del 'LINES WERE DELETED.'                
+      "RESET"                                                                   
+       Address ISPEXEC "SETMSG MSG(ISRZ000)"  /* msg - no alarm */              
+       Exit 0                                                                   
+   End                                                                          
+   Else do                                                                      
+       parm = Translate(parm) /* upper case */                                  
+       zedsmsg = 'STRING NOT FOUND'                                             
+       zedlmsg = 'THE STRING "'parm'" WAS NOT FOUND IN THE FILE.'               
+      "RESET"                                                                   
+       Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */            
+       Exit 12                                                                  
+   End                                                                          
+
+////////////////////
+
+/* REXX */                                                                      
+/*                           */                                                 
+/* AUTHOR: MARK ZELDEN       */                                                 
+/* Last Updated 02/16/2007   */                                                 
+/*********************************************************/                     
+/*  "HIDE EXCLUDED" is used on systems that are running  */                     
+/*  z/OS 1.6 (ISPF 5.6) and above.                       */                     
+/*  Remove if you like to see excluded lines or issue    */                     
+/*  "RESET HIDE" after you run the macro.                */                     
+/*********************************************************/                     
+/* Trace ?R */                                                                  
+Address ISREDIT                                                                 
+"MACRO (parm col1 col2)"                                                        
+ /* Address ISPEXEC "CONTROL ERRORS RETURN"  */                                 
+If pos('&',parm) <> 0 then do                                                   
+  parmx = Translate(parm) /* upper case                  */                     
+  parmx = C2X(parmx)      /* change to hex for seek/find */                     
+  amp = 'Y'                                                                     
+End                                                                             
+  /* check for numeric column numbers      */                                   
+  If col1 <> '' then do                                                         
+    If Datatype(col1,Number) <> 1 then do                                       
+      zedsmsg = 'START COLUMN NOT NUMERIC'                                      
+      zedlmsg = 'THE STARTING COLUMN FOR THE',                                  
+                'SEARCH MUST BE NUMERIC.'                                       
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If col2 = '' then col2 = col1                                               
+  End                                                                           
+  If col2 <> '' then do                                                         
+    If Datatype(col2,Number) <> 1 then do                                       
+      zedsmsg = 'END COLUMN NOT NUMERIC'                                        
+      zedlmsg = 'THE ENDING COLUMN FOR THE',                                    
+                'SEARCH MUST BE NUMERIC.'                                       
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If col2 < col1 then do                                                      
+      zedsmsg = 'END COL < START COL'                                           
+      zedlmsg = 'THE ENDING COLUMN MUST BE GREATER THAN OR',                    
+                'EQUAL TO THE STARTING COLUMN.'                                 
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If Length(Strip(Translate(parm,'','"'''''))) ,                              
+      > COL2-COL1+1 then do                                                     
+      zedsmsg = 'PARM TOO LONG'                                                 
+      zedlmsg = 'THE STRING WILL NOT FIT BETWEEN THE',                          
+                'SPECIFIED COLUMNS.'                                            
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    "(width) = DATA_WIDTH "   /* length of line       */                        
+    width = Format(width)     /* remove leading zeros */                        
+    If col1 < 1 | col2 < 1 | col1 > width | col2 > width then do                
+      zedsmsg = 'INVALID COLUMN NUMBER'                                         
+      zedlmsg = 'ALL COLUMN SPECIFICATIONS MUST BE' ,                           
+                'BETWEEN 1 AND' width                                           
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+  End                                                                           
+parmck = Translate(parm)                                                        
+If parmck = 'X' | parmck = 'NX' | parmck = '*' ,                                
+   | parmck = '/*' then parm = "'" ||parm|| "'"                                 
+If AMP = 'Y' then "SEEK x'"parmx"'" col1 col2" FIRST"                           
+  Else "SEEK "parm col1 col2" FIRST"                                            
+   If rc = 0  then do                                                           
+      "EXCLUDE ALL"                                                             
+      If AMP = 'Y' then do                                                      
+        "FIND x'"parmx"'" col1 col2" ALL"                                       
+        "SEEK x'"parmx"'" col1 col2" ALL"                                       
+      End                                                                       
+      Else do                                                                   
+        "FIND "parm col1 col2" ALL"                                             
+        "SEEK "parm col1 col2" ALL"                                             
+      End                                                                       
+      "(count,lines) = SEEK_COUNTS"                                             
+       Address ISPEXEC "VGET ZENVIR"                                            
+       If Substr(ZENVIR,6,3) >= 5.5 then "HIDE EXCLUDED"                        
+       count = Format(count)                                                    
+       lines = Format(lines)                                                    
+       parm = Translate(parm) /* upper case */                                  
+       zedsmsg = count' "'parm'" FOUND'                                         
+       zedlmsg = 'THE STRING "'parm'" WAS FOUND 'count' TIMES',                 
+                 'ON 'lines' LINES.'                                            
+       Address ISPEXEC "SETMSG MSG(ISRZ000)"  /* msg - no alarm */              
+       Exit 0                                                                   
+   End                                                                          
+   Else do                                                                      
+       parm = Translate(parm) /* upper case */                                  
+       zedsmsg = 'STRING NOT FOUND'                                             
+       zedlmsg = 'THE STRING "'parm'" WAS NOT FOUND IN THE FILE.'               
+      "RESET"                                                                   
+       Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */            
+       Exit 12                                                                  
+   End                                             
+/////////////////
+/* REXX */                                                                      
+/*                           */                                                 
+/* AUTHOR: MARK ZELDEN       */                                                 
+/* Last Updated 02/16/2007   */                                                 
+/*********************************************************/                     
+/*  "HIDE EXCLUDED" is used on systems that are running  */                     
+/*  z/OS 1.6 (ISPF 5.6) and above.                       */                     
+/*  Remove if you like to see excluded lines or issue    */                     
+/*  "RESET HIDE" after you run the macro.                */                     
+/*********************************************************/                     
+/* Trace ?R */                                                                  
+Address ISREDIT                                                                 
+"MACRO (parm col1 col2)"                                                        
+ /* Address ISPEXEC "CONTROL ERRORS RETURN"  */                                 
+If pos('&',parm) <> 0 then do                                                   
+  parmx = Translate(parm) /* upper case                  */                     
+  parmx = C2X(parmx)      /* change to hex for seek/find */                     
+  amp = 'Y'                                                                     
+End                                                                             
+  /* check for numeric column numbers      */                                   
+  If col1 <> '' then do                                                         
+    If Datatype(col1,Number) <> 1 then do                                       
+      zedsmsg = 'START COLUMN NOT NUMERIC'                                      
+      zedlmsg = 'THE STARTING COLUMN FOR THE',                                  
+                'SEARCH MUST BE NUMERIC.'                                       
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If col2 = '' then col2 = col1                                               
+  End                                                                           
+  If col2 <> '' then do                                                         
+    If Datatype(col2,Number) <> 1 then do                                       
+      zedsmsg = 'END COLUMN NOT NUMERIC'                                        
+      zedlmsg = 'THE ENDING COLUMN FOR THE',                                    
+                'SEARCH MUST BE NUMERIC.'                                       
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If col2 < col1 then do                                                      
+      zedsmsg = 'END COL < START COL'                                           
+      zedlmsg = 'THE ENDING COLUMN MUST BE GREATER THAN OR',                    
+                'EQUAL TO THE STARTING COLUMN.'                                 
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If Length(Strip(Translate(parm,'','"'''''))) ,                              
+      > COL2-COL1+1 then do                                                     
+      zedsmsg = 'PARM TOO LONG'                                                 
+      zedlmsg = 'THE STRING WILL NOT FIT BETWEEN THE',                          
+                'SPECIFIED COLUMNS.'                                            
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    "(width) = DATA_WIDTH "   /* length of line       */                        
+    width = Format(width)     /* remove leading zeros */                        
+    If col1 < 1 | col2 < 1 | col1 > width | col2 > width then do                
+      zedsmsg = 'INVALID COLUMN NUMBER'                                         
+      zedlmsg = 'ALL COLUMN SPECIFICATIONS MUST BE' ,                           
+                'BETWEEN 1 AND' width                                           
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+  End                                                                           
+parmck = Translate(parm)                                                        
+If parmck = 'X' | parmck = 'NX' | parmck = '*' ,                                
+   | parmck = '/*' then parm = "'" ||parm|| "'"                                 
+If AMP = 'Y' then "SEEK x'"parmx"'" col1 col2" FIRST"                           
+  Else "SEEK "parm col1 col2" FIRST"                                            
+   If rc = 0  then do                                                           
+      If AMP = 'Y' then do                                                      
+        "EXCLUDE X'"parmx"'" col1 col2" ALL"                                    
+        "SEEK X'"parmx"'" col1 col2" ALL"                                       
+      End                                                                       
+      Else Do                                                                   
+        "EXCLUDE "parm col1 col2" ALL"                                          
+        "SEEK "parm col1 col2" ALL"                                             
+      End                                                                       
+      "(count,lines) = SEEK_COUNTS"                                             
+       Address ISPEXEC "VGET ZENVIR"                                            
+       If Substr(ZENVIR,6,3) >= 5.5 then "HIDE EXCLUDED"                        
+       count = Format(count)                                                    
+       lines = Format(lines)                                                    
+       parm = Translate(parm) /* upper case */                                  
+       zedsmsg = count' "'parm'" EXCLUDED'                                      
+       zedlmsg = 'THE STRING "'parm'" WAS EXCLUDED 'count' TIMES',              
+                 'FROM 'lines' LINES.'                                          
+       Address ISPEXEC "SETMSG MSG(ISRZ000)"  /* msg - no alarm */              
+       Exit 0                                                                   
+   End                                                                          
+   Else do                                                                      
+       parm = Translate(parm) /* upper case */                                  
+       zedsmsg = 'STRING NOT FOUND'                                             
+       zedlmsg = 'THE STRING "'parm'" WAS NOT FOUND IN THE FILE.'               
+      "RESET"                                                                   
+       Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */            
+       Exit 12                                                                  
+   End                                           
+///////////////
+
+
+/* REXX */                                                                      
+/*                                       */                                     
+/* AUTHOR: Mark Zelden                   */                                     
+/*                                       */                                     
+/* Last Updated 05/01/2007               */                                     
+/*                                       */                                     
+/* Trace ?R */                                                                  
+Address ISREDIT                                                                 
+"MACRO (col1 col2 parm label1 label2)"                                          
+ /* Address ISPEXEC "CONTROL ERRORS RETURN"  */                                 
+ /*                                                        */                   
+ /*  This edit macro will FILL column(s) with characters.  */                   
+ /*  The FILL can optionally be limited to specific lines  */                   
+ /*  if labels are used. Exluded lines are omitted from    */                   
+ /*  the operation.                                        */                   
+ /*  EXAMPLES: FILL 1 2 '/' ;  FILL 2 7 'DELETE' .A .B     */                   
+ /*                                                        */                   
+  /* check for numeric column numbers      */                                   
+  If col1 <> '' then do                                                         
+    If Datatype(col1,Number) <> 1 then do                                       
+      zedsmsg = 'START COLUMN NOT NUMERIC'                                      
+      zedlmsg = 'THE STARTING COLUMN FOR THE',                                  
+                'FILL MUST BE NUMERIC.'                                         
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If col2 = '' then do                                                        
+      zedsmsg = 'NO ENDING COLUMN'                                              
+      zedlmsg = 'AN ENDING COLUMN FOR THE',                                     
+                'FILL MUST BE SPECIFIED.'                                       
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+  End                                                                           
+  If col2 <> '' then do                                                         
+    If Datatype(col2,Number) <> 1 then do                                       
+      zedsmsg = 'END COLUMN NOT NUMERIC'                                        
+      zedlmsg = 'THE ENDING COLUMN FOR THE',                                    
+                'FILL MUST BE NUMERIC.'                                         
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+    If col2 < col1 then do                                                      
+      zedsmsg = 'END COL < START COL'                                           
+      zedlmsg = 'THE ENDING COLUMN MUST BE GREATER THAN OR',                    
+                'EQUAL TO THE STARTING COLUMN.'                                 
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */             
+      Exit 12                                                                   
+    End                                                                         
+  End                                                                           
+  If col1 = '' then do                                                          
+    zedsmsg = 'NO STARTING COLUMN'                                              
+    zedlmsg = 'YOU MUST SPECIFY A STARTING COLUMN',                             
+              'FOR THE CHARACTER FILL.'                                         
+    Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */               
+    Exit 12                                                                     
+  End                                                                           
+  If parm = '' then do                                                          
+    zedsmsg = 'NO FILL CHARACTER'                                               
+    zedlmsg = 'YOU MUST SPECIFY A FILL CHARACTER',                              
+              'AS THE THIRD PARAMETER.'                                         
+    Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */               
+    Exit 12                                                                     
+  End                                                                           
+  "(width) = DATA_WIDTH "   /* length of line       */                          
+  width = Format(width)     /* remove leading zeros */                          
+  If col1 < 1 | col2 < 1 | col1 > width | col2 > width then do                  
+    zedsmsg = 'INVALID COLUMN NUMBER'                                           
+    zedlmsg = 'ALL COLUMN SPECIFICATIONS MUST BE' ,                             
+              'BETWEEN 1 AND' width                                             
+    Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */               
+    Exit 12                                                                     
+  End                                                                           
+ /*                             */                                              
+ /* Save current BOUNDS setting */                                              
+ /*                             */                                              
+"(status) = USER_STATE"                                                         
+/***********************************************/                               
+/*   FIND OUT IF LABELS ARE BEING USED         */                               
+/***********************************************/                               
+Call FIND_LABELS                                                                
+/***********************************************/                               
+parmck = Translate(parm)                                                        
+If parmck = 'X' | parmck = 'NX' | parmck = '*' ,                                
+   | parmck = '/*' then parm = "'" ||parm|| "'"                                 
+ /***************************************************/                          
+ /* Begin changing data                             */                          
+ /***************************************************/                          
+"BOUNDS "col1 col2                                                              
+"C P'=' ' '    ALL  NX "label1 label2 /* all characters   */                    
+"C P'=' " || parm || " ALL  NX "label1 label2 /* all characters   */            
+ /***************************************************/                          
+ /* End of changes                                  */                          
+ /***************************************************/                          
+ /*                                      */                                     
+ /* Find the number of changed lines and */                                     
+ /* and save them for later use          */                                     
+ /*                                      */                                     
+"SEEK " || parm || " ALL NX "label1 label2                                      
+"(junk,count) = SEEK_COUNTS"                                                    
+ /*                              */                                             
+ /* restore saved BOUNDS setting */                                             
+ /*                              */                                             
+"USER_STATE = (status)"                                                         
+"RESET CHANGE ERROR"                                                            
+ /*                              */                                             
+ /* display changed lines count  */                                             
+ /*                              */                                             
+count=count+0  /* remove leading zeros */                                       
+zedsmsg = count 'LINES CHANGED'                                                 
+zedlmsg = count 'LINES WERE FILLED WITH "'parm'".'                              
+Address ISPEXEC "SETMSG MSG(ISRZ000)"  /* msg - no alarm */                     
+Exit 0                                                                          
+/*********************************/                                             
+/*  SUB-ROUTINE TO FIND LABELS   */                                             
+/*********************************/                                             
+FIND_LABELS:                                                                    
+If label1 = '' then return                                                      
+If label2 = '' then label2 = label1                                             
+firstlab = 'NOTFOUND'                                                           
+lastlab  = 'NOTFOUND'                                                           
+label1 = Translate(label1)                                                      
+label2 = Translate(label2)                                                      
+"(saveln) = DISPLAY_LINES"                                                      
+"UP MAX"                                                                        
+Do forever                                                                      
+  "LOCATE LAB NEXT"                                                             
+  if rc <> 0 then leave                                                         
+  "(labline,junk) = DISPLAY_LINES"                                              
+  "(lab,junk) = LABEL" labline                                                  
+  if lab = label1 then firstlab = labline                                       
+  if lab = label2 then lastlab = labline                                        
+End                                                                             
+If label1 ='.ZFIRST'| label1 = '.ZLAST' | ,                                     
+   label1 ='.ZF'| label1 = '.ZL' then firstlab = label1                         
+If label2 ='.ZFIRST'| label2 = '.ZLAST' | ,                                     
+   label2 ='.ZF'| label2 = '.ZL' then lastlab  = label2                         
+/*                                             */                               
+/* return display lines to originial position  */                               
+/*                                             */                               
+"UP MAX"                                                                        
+If saveln <> 1 then "DOWN " saveln  /* don't scroll if at top */                
+/*                                             */                               
+If firstlab = 'NOTFOUND' then do                                                
+  zedsmsg = 'RANGE LABEL ERROR'                                                 
+  zedlmsg = 'THE SPECIFIED RANGE LABEL "' || label1 '" WAS',                    
+            'NOT FOUND'                                                         
+  Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */                 
+  Exit 12                                                                       
+End                                                                             
+If lastlab = 'NOTFOUND'  then do                                                
+  zedsmsg = 'RANGE LABEL ERROR'                                                 
+  zedlmsg = 'THE SPECIFIED RANGE LABEL "' || label2 '" WAS',                    
+            'NOT FOUND'                                                         
+  Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */                 
+  Exit 12                                                                       
+End                                                                             
+Return                                                       
+
+//////////////
+/* REXX */
+/*                                       */
+/* AUTHOR: Mark Zelden                   */
+/*                                       */
+/* TRACE ?R */
+Address ISREDIT
+"MACRO"
+ /* Address ISPEXEC "CONTROL ERRORS RETURN"  */
+ /*                                                    */
+ /* This edit macro will delete all lines from the     */
+ /* line the cursor is on to the bottom line.          */
+ /*                                                    */
+  /***********************************************/
+  /*   BEGIN DB PROCESSING                       */
+  /***********************************************/
+  "ISREDIT (row,col) = CURSOR"
+  "(lastln) = LINENUM .ZLAST"     /* last data line       */
+  If row  = lastln then do                                         
+    zedsmsg = 'NEED AT LEAST 2 LINES'                              
+    zedlmsg = 'YOU MUST DELETE AT LEAST 2 LINES IN THE FILE',      
+              'TO EXECUTE THE DB EDIT MACRO.'                      
+    Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */  
+    Exit 12                                                        
+  End  
+  "ISREDIT LABEL " row "= .FROM"
+  "ISREDIT LABEL " lastln "= .TO"
+  "DELETE ALL .FROM .TO"  /* delete labeled lines */
+  /***********************************************/
+  /*   END DB PROCESSING                         */
+  /***********************************************/
+  count = lastln - row + 1
+  zedsmsg = count 'LINES DELETED'
+  zedlmsg = count 'LINES WERE DELETED FROM THE CURSOR LINE' ,
+                  'TO THE BOTTOM LINE.'
+  Address ISPEXEC "SETMSG MSG(ISRZ000)"  /* msg - no alarm */
+  Exit 0
+
+///////////////////
+/* REXX */                                                                      
+/*                                        */                                    
+/* AUTHOR: Mark Zelden                    */                                    
+/*                                        */                                    
+/* Last Updated 08/23/2007                */                                    
+/***************************************************************/               
+/* SW Edit Macro - Switch from VIEW to EDIT or visa versa      */               
+/***************************************************************/               
+/* Execution syntax:                                           */               
+/*                                                             */               
+/* SW  or  SW FORCE   (FORCE may be abbreviated, e.g. SW F)    */               
+/*                                                             */               
+/* Note:                                                       */               
+/*  If data has been changed you must either SAVE the data     */               
+/*  first or use the FORCE option. Any changes made will be    */               
+/*  lost when using FORCE. FORCE me be abbeviated using one    */               
+/*  or more of its characters, for example:  SW F.             */               
+/*                                                             */               
+/*  Also note that using this macro on a sequential data set   */               
+/*  requires the use of XVIEW and XEDIT also available from    */               
+/*  CBT file 434 and my web site.                              */               
+/*                                                             */               
+/***************************************************************/               
+Address ISREDIT                                                                 
+"MACRO (opt)"                                                                   
+"(DSN) = DATASET"                                                               
+"(MBR) = MEMBER"                                                                
+"(SES) = SESSION"                                                               
+"(DCHG) = DATA_CHANGED"                                                         
+OPT = Translate(OPT)                /* ensure upper case */                     
+If ses = 'EDIF' | ses = 'VIIF' then do                                          
+  zedsmsg = 'Can''t switch from' ses                                            
+  zedlmsg = 'This macro can''t be used when the session is' ,                   
+            'using the ISPF' ses 'interface.'                                   
+  Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */                 
+  Exit 12                                                                       
+End                                                                             
+If OPT <> '' & Abbrev('FORCE',OPT,1) <> 1 then do                               
+  zedsmsg = 'Invalid option'                                                    
+  zedlmsg = 'The only valid option is "FORCE". FORCE may be' ,                  
+            'abbreviated using one or more of its characters.'                  
+  Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */                 
+  Exit 12                                                                       
+End                                                                             
+If DCHG = 'NO' | ,                                                              
+   (DCHG = 'YES' & Abbrev('FORCE',OPT,1) = 1) then do                           
+  If MBR <> '' then do                                                          
+    If ses = 'VIEW' then "EDIT" mbr                                             
+      else "VIEW" mbr                                                           
+    If RC = 4 then RC = 0                                                       
+    If RC <> 0 then do                                                          
+      Address ISPEXEC "SETMSG MSG("ZERRMSG")"                                   
+      Exit 8                                                                    
+    End                                                                         
+  End /* if MBR */                                                              
+  Else do                                                                       
+    "(VOL) = VOLUME"                                                            
+    If ses = 'VIEW' then Address TSO "%XEDIT '"dsn"'" vol                       
+      else Address TSO "%XVIEW '"dsn"'" vol                                     
+  End                                                                           
+  "CANCEL"  /* cancel out of mbr originally edited/viewed */                    
+End /* if DCHG = 'YES' & Abbrev('FORCE',OPT,1) = 1 */                           
+Else do                                                                         
+  zedsmsg = 'Data changed: SAVE/FORCE'                                          
+  zedlmsg = 'If data has been changed you must either SAVE the data' ,          
+            'first or use the FORCE option. Any changes made will be',          
+            'lost when using FORCE. FORCE may be abbreviated using' ,           
+            'one or more of its characters, for example:  SW F.'                
+  Address ISPEXEC "SETMSG MSG(ISRZ001)"  /* msg - with alarm */                 
+  Exit 12                                                                       
+End                                         
+////////////////
+
+/* REXX */                                                                      
+/*                                             */                               
+/*                                             */                               
+/* AUTHOR: Mark Zelden                         */                               
+/*                                             */                               
+/* This edit macro allows the user to BROWSE   */                               
+/* the data set located on the line that the   */                               
+/* cursor is on.                               */                               
+/*                                             */                               
+/* The cursor can be anywhere on a line that   */                               
+/* has DSN= or DSNAME= but must be at the      */                               
+/* start of the data set name if there is      */                               
+/* no DSN= or DSNAME=.                         */                               
+/*                                             */                               
+/* Last updated on 10/15/2002                  */                               
+/* TRACE ?R */                                                                  
+Address ISREDIT                                                                 
+"MACRO"                                                                         
+Address ISPEXEC "CONTROL ERRORS RETURN"                                         
+  /***********************************************/                             
+  /*   BEGIN PROCESSING                          */                             
+  /***********************************************/                             
+  "(row,col) = CURSOR"                                                          
+  "(data1) = LINE " row              /* data1 = cursor line          */         
+  /**********************************/                                          
+  /* Find start of data set name    */                                          
+  /**********************************/                                          
+  dsnstart = Pos('DSN=',data1)       /* look for DSN=                */         
+  If dsnstart = 0 then do            /* no DSN =                     */         
+    dsnstart = Pos('DSNAME=',data1)  /* look for DSNAME=             */         
+    If dsnstart = 0 then do          /* no DSN= or DSNAME=           */         
+      "CURSOR = " row col            /* cursor pos                   */         
+      If col < 1 then dsnstart = 1   /* needed for ZB line cmd       */         
+      Else dsnstart = col            /* assume cursor on DSN         */         
+    End                                                                         
+    Else dsnstart = dsnstart + 7     /* DSNAME= specified in JCL     */         
+  End /* if dsnstart = 0 */                                                     
+  Else dsnstart = dsnstart + 4       /* DSN = specified in JCL       */         
+  /**********************************/                                          
+  /* Find end of data set name      */                                          
+  /**********************************/                                          
+  dsnend = Pos(',',data1,dsnstart)   /* look for comma at end of dsn */         
+  If dsnend = 0 then do              /* no comma found               */         
+    dsnend = Pos(' ',data1,dsnstart) /* look for blank to end DSN    */         
+    If dsnend = 0 then do            /* no blank or comma at end     */         
+      zedsmsg = 'No end of DSN'                                                 
+      zedlmsg = 'The data set name is not terminated with a' ,                  
+                'space or comma.'                                               
+      Address ISPEXEC "SETMSG MSG(ISRZ001)"      /* msg - with alarm */         
+      "CURSOR = " row col /* put cursor back to last position        */         
+      Exit 8                                                                    
+    End  /* if dsnend = 0 */                                                    
+    Else dsnend = dsnend - 1         /* DSN ends with blank          */         
+  End /* if dsnend = 0 */                                                       
+  Else dsnend = dsnend - 1           /* DSN ends with comma          */         
+  /**********************************/                                          
+  /* BROWSE the data set            */                                          
+  /**********************************/                                          
+  dsn = Substr(data1,dsnstart,dsnend-dsnstart+1) /* extract dsn     */          
+  dsn = Strip(Translate(dsn,"","'"))       /* remove quotes if used */          
+  Address ISPEXEC "BROWSE DATASET('"dsn"')"                                     
+  If RC <> 0 then Address ISPEXEC "SETMSG MSG("ZERRMSG")"                       
+  "CURSOR = " row col /* put cursor back to last position        */             
+  Exit 0                                       
+////////////////////
+/* REXX */
+/*                                       */
+/* AUTHOR: Mark Zelden                   */
+/* Last Updated 05/31/2001               */
+/*                                       */
+/***************************************************************/
+/*                                                             */
+/* This REXX exec can be used to process an ISPF EDIT Macro    */
+/* against every member of a PDS.                              */
+/*                                                             */
+/***************************************************************/
+/* Command syntax:                                             */
+/*                                                             */
+/*   TSO %EDMACALL  data_set_name  macro_name                  */
+/*                                                             */
+/* If data_set_name is not enclosed in quotes, then the        */
+/* TSO PREFIX (normally the USERID) will be added to the       */
+/* beginning of the data set name.                             */
+/*                                                             */
+/***************************************************************/
+/* Sample EDIT Macro and EDMACALL execution:                   */
+/*                                                             */
+/*  CHGSYS Edit Macro                                          */
+/*                                                             */
+/*  /* rexx   EDIT Macro to change "SYSA." to "SYSB." */       */
+/*  Address ISREDIT                                            */
+/*  "MACRO"                                                    */
+/*  "CHANGE 'SYSA.' 'SYSB.' ALL"                               */
+/*  "SAVE"                                                     */
+/*  "END"                                                      */
+/*                                                             */
+/*  EDMACALL Execution                                         */
+/*                                                             */
+/*  TSO  %EDMACALL 'TEST.PROCLIB' CHGSYS                       */
+/*                                                             */
+/***************************************************************/
+Arg DSN MACNAME .
+If MACNAME = '' then do               /* no macro name parm given    */
+  Say  'ERROR - EDIT MACRO name not specified' /* issue error msg    */
+  Exit 12                             /* exit RC=12                  */
+End
+If Pos("'",DSN) = 0 &  SYSVAR(SYSPREF) <> '' then , /* if no quotes  */
+  DSN = SYSVAR(SYSPREF) || '.' || DSN /* and PREF not null, add it   */
+Else DSN = Strip(Translate(DSN,"","'")) /* remove quotes if used     */
+CHKLIB = SYSDSN("'"DSN"'")            /* see if data set exists      */
+If  CHKLIB <> 'OK' then do            /* data set not found          */
+  Say  'ERROR -' dsn 'not found. Check name and quotes.' /* issue msg*/
+  Exit 12                             /* exit RC=12                  */
+End
+junk = outtrap('MBR.')                /* capture output to MBR. stem */
+"LISTD '" || dsn || "' MEMBERS"       /* issue LISTD cmd against PDS */
+junk = outtrap('off')                 /* stop capturing output       */
+Do I = 1 to MBR.0                     /* loop to get past vol info   */
+  If MBR.I = "--MEMBERS--" then leave /* if member section, exit loop*/
+End
+If I = MBR.0 then do                  /* no members in PDS           */
+  Say 'ERROR - No MEMBERS found in' dsn'.' /* issue error msg        */
+  Exit 12                             /* exit RC=12                  */
+End
+Say 'Processing' MBR.0 - I 'members ...'
+Do J = I+1 to MBR.0                   /* loop to execute edit macro  */
+  Parse var MBR.J MACMEM .            /* get rid of alias info       */
+  Address ISPEXEC "EDIT DATASET('" || dsn || "(" || macmem || ")')" ,
+                  "MACRO("macname")"
+End
+Say 'Processing complete!'
+Exit 0
+
+
+//////////////////////
+
+/* REXX */                                                                      
+/*                                       */                                     
+/* AUTHOR: Mark Zelden                   */                                     
+/*                                       */                                     
+/* Last update:  05/15/2002              */                                     
+/*****************************************************************/             
+/*  XEDIT - EDIT a data set from anywhere.                       */             
+/*                                                               */             
+/*  Best used when set up in the ISPF command table with an      */             
+/*  abbreviation of "XE".                                        */             
+/*    VERB      T   ACTION                                       */             
+/*    XEDIT     2   SELECT CMD(%XEDIT &ZPARM) NEWAPPL(ISR)       */             
+/*                                                               */             
+/*  Fully qualified data set names are now optional, regardless  */             
+/*  of the TSO PROFILE PREFIX setting. PREFIX.DATA.SET.NAME will */             
+/*  be tried first, then DATA.SET.NAME for data sets that are    */             
+/*  not fully qualified.                                         */             
+/*                                                               */             
+/*****************************************************************/             
+/* COMMAND SYNTAX:                                               */             
+/*                                                               */             
+/*  XE DATA.SET.NAME  <volser>    (VOLSER is optional)           */             
+/*                                                               */             
+/*  XE 'MY.PDS(ABC*)'                                            */             
+/*  XE PDS.NOTCAT USER01                                         */             
+/*                                                               */             
+/*  If not set up as an ISPF command, then you can still         */             
+/*  invoke the exec by typing:   TSO %XEDIT DATA.SET.NAME        */             
+/*****************************************************************/             
+Parse UPPER ARG DSN VOL                                                         
+                                                                                
+If DSN= '' then do                          /* no DSN specified      */         
+  say 'Please enter positional parameter dsn -' /* prompt for dsn    */         
+  parse upper pull DSN                      /* get dsn response      */         
+End                                                                             
+                                                                                
+Address ISPEXEC                                                                 
+"CONTROL ERRORS RETURN"                                                         
+"VGET ZPCFMCN PROFILE"                                                          
+If ZPCFMCN = '/' then CONF = 'YES'                                              
+ else CONF = 'NO'                                                               
+/************************************/                                          
+/* check if EDIT RECOVERY is needed */                                          
+/************************************/                                          
+EDITOK = 'NOTOK'                                                                
+Do while EDITOK = 'NOTOK'                                                       
+  "EDREC QUERY"                                                                 
+  If RC = 4 then do                                                             
+    "DISPLAY PANEL(ISREDM02)"                                                   
+    DISPRC = RC                                                                 
+    "VGET ZVERB"                                                                
+     If DISPRC = 0 then do                                                      
+       If ZEDCMD = '' then "EDREC PROCESS PASSWORD(" || PSWD || ")"             
+       If ZEDCMD = 'C' then "EDREC CANCEL"                                      
+       If ZEDCMD = 'D' then "EDREC DEFER"                                       
+     End                                                                        
+     Else if DISPRC = 8 & ZVERB = 'CANCEL' then "EDREC CANCEL"                  
+     Else EXIT 0                                                                
+  End                                                                           
+  Else EDITOK = 'OK'                                                            
+End                                                                             
+RC = 0                                                                          
+/************************************/                                          
+/* end of RECOVERY CHECK            */                                          
+/************************************/                                          
+"EDIT DATASET("DSN") VOLUME("VOL")" ,       /* try userid.DSN first  */         
+"CONFIRM("CONF")"                                                               
+If RC = 4 then RC = 0                                                           
+If RC <> 0 then do                          /* not found - try again */         
+   DSN =  Strip(Translate(DSN,"","'"))      /* remove quotes if used */         
+  "EDIT DATASET('"DSN"') VOLUME("VOL")" ,   /* try DSN specified     */         
+  "CONFIRM("CONF")"                                                             
+End                                                                             
+If RC = 4 then RC = 0                                                           
+If RC <> 0 then "SETMSG MSG("ZERRMSG")"     /* not found - issue msg */         
+
+
+////////////////
