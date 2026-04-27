@@ -1,0 +1,65 @@
+/* REXX */
+/* ************************************************************/
+/* * */
+/* * MACRO NAME: MKCOMMA */
+/* * */
+/* * PURPOSE: ADD A COMMA AT THE END OF ALL LINES OF */
+/* * SYSIN STREAM. */
+/* * */
+/* * PROGRAMMER: Elizabeth Bradley. */
+/* * */
+/* * DATE: 26/1и/2ии4. */
+/* * */
+/* ************************************************************/
+ADDRESS "ISPEXEC" /* WORK UNDER ISPF. */
+ISREDIT MACRO /* ISPF EDIT MACRO. */
+ADDRESS "ISREDIT" /* EDIT COMMANDS FOLLOW. */
+"(FIRST) = LINENUM .ZFIRST" /* SET UP POINTER TO FIRST LINE. */
+"(LAST) = LINENUM .ZLAST" /* POINT TO LAST LINE. */
+DO WHILE FIRST <= LAST /* LOOP UNTIL ALL LINES PROCESSED. */
+"(JCLVAR) = LINE" FIRST /* pick up first line. */
+JCLVAR = STRIP(JCLVAR,T) /* strip trailing blanks. */
+IF SUBSTR(JCLVAR,1,1) = "/" THEN /* if not jcl then process. */
+JCLVAR = JCLVAR||"," /* concat a , on end of the line. */
+"LINE" FIRST "= (JCLVAR)" /* write updated line to output. */
+FIRST = FIRST + 1 /* PROCESS NEXT LINE. */
+END
+
+
+
+/* REXX */
+/* ************************************************************/
+/* * */
+/* * MACRO NAME: MKJOB */
+/* * */
+/* * PURPOSE: TO SET UP INITIAL JCL IN EDIT LIBRAY. */
+/* * WILL COPY STANDARD JOBCARD AND COMMENT */
+/* * MEMBER WHEN NEW MEMBER IS CREATED. */
+/* * */
+/* * PROGRAMMER: ELIZABETH BRADLEY. */
+/* * */
+/* * DATE: 18/1и/2ии4. */
+/* * */
+/* ************************************************************/
+ADDRESS "ISPEXEC" /* WORK UNDER ISPF. */
+ISREDIT MACRO /* ISPF EDIT MACRO. */
+ADDRESS "ISREDIT" /* EDIT COMMANDS FOLLOW. */
+"COPY JOBCARD AFTER и" /* COPY JOBCARD. */
+"COPY COMMENT AFTER .ZLAST" /* COPY COMMENT AFTER LAST CARD. */
+"COPY COMMENT AFTER .ZLAST" /* COPY COMMENT AFTER LAST CARD. */
+EXIT и /* LEAVE THE MACRO WITH RC= и. */
+JOBCARD MEMBER EXAMPLE
+//EXB7884 JOB (GEN),'CSM,E.BRADLEY',CLASS=A,MSGCLASS=H,MSGLEVEL=(1,1)
+/*JOBPARM SYSAFF=*
+COMMENT MEMBER EXAMPLE
+//*
+//* *************************************************************
+//* *
+//* * *
+//* * *
+//* * *
+//* * *
+//* * *
+//* *************************************************************
+//*
+
