@@ -1,0 +1,21 @@
+/* REXX */
+/* Open ISPF 3.4 (DSLIST) and display datasets using qualifier from argument */
+
+address ISPEXEC
+
+/* --- Check for argument --- */
+parse upper arg dsqual
+
+if dsqual = "" then do
+  say "Usage:  DSLIST <dataset qualifier>"
+  say "Example: DSLIST USER.TEST"
+  exit 8
+end
+
+/* --- Launch ISPF 3.4 with qualifier --- */
+"CONTROL DISPLAY LOCK"
+"SELECT PGM(ISRDSL) NEWAPPL(ISR) PARM('"dsqual"')"
+"CONTROL DISPLAY FREE"
+
+exit 0
+
