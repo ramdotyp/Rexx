@@ -1,0 +1,224 @@
+
+
+xp
+==
+FOUND=0;EXPANDED=0;I=1                                           
+ADDRESS ISPEXEC 'CONTROL ERRORS RETURN'                          
+ADDRESS ISREDIT 'MACRO PROCESS'                                  
+'ISREDIT (LASTLINE) = LINENUM .ZLAST'                            
+DO FOREVER                                                       
+    IF I <= LASTLINE THEN DO                                     
+         'ISREDIT (PLINE) = LINE ' I                             
+         P2LINE = STRIP(PLINE,T)                                 
+         CHECK = SUBSTR(P2LINE,7,65)                             
+         COL7 = SUBSTR(CHECK,1,1)                                
+         IF (COL7 <> '*') THEN DO                                
+              COPY = SUBWORD(CHECK,1,1)                          
+              CBK = SUBWORD(CHECK,2,1)                           
+              UCOPY = TRANSLATE(COPY)                            
+              IF (UCOPY = 'COPY' | UCOPY = 'INCLUDE') THEN DO    
+                   FOUND = FOUND + 1                             
+                   SCBK = STRIP(CBK,'T',.)                       
+                   CALL GET_CPYBK_RECORDS                        
+              END                                                
+         END                                                     
+         I=I+1                                                   
+    END                                                          
+    ELSE DO                                                      
+         ZEDLMSG = 'FOUND = ' FOUND 'EXPANDED = 'EXPANDED        
+         "ISPEXEC SETMSG MSG(ISRZ000)"                           
+         EXIT                                                    
+    END                                                          
+END                                                              
+/*------------------------------------------------------------*/       
+GET_CPYBK_RECORDS:                                                     
+    LIB.1="SW.ENDV.SYU.PROD.FEPD.CPY"                                  
+    LIB.2="SW.ENDV.SYU.PROD.FEPD.DCL"                                  
+    LIB.3="TE.PD.GAPS.COPYLIB"                                         
+    LIB.4="ER.DP.LMS.COPYLIB"                                          
+    LIB.5="SW.ENDV.SYU.PROD.FERG.CPY"                                  
+    LIB.6="SW.ENDV.SYU.PROD.FERG.DCL"                                  
+                                                                       
+    DO K = 1 TO 6 BY 1                                                 
+         DS = LIB.K||'('||SCBK||')'                                    
+         DSDSN = SYSDSN("'"DS"'")                                      
+         IF (DSDSN = 'OK') THEN DO                                     
+              "ALLOC DD(INFILE) DSNAME('"DS"') SHR REUSE"              
+              "EXECIO * DISKR INFILE(STEM COPYREC. FINIS"              
+              "FREE DD(INFILE)"                                        
+              CALL INSERT_COPYBOOK                                     
+              K = 7                                                    
+         END                                                           
+    END                                                                
+    RETURN                                                             
+/*------------------------------------------------------------*/       
+INSERT_COPYBOOK:                                                       
+    TEMP=I        /* GETS CURRENT LINE(I) FOR ASC INSERT BY ITERATING*/
+    DO J = 1 TO COPYREC.0 BY 1                                         
+         SCOPYREC.J = STRIP(COPYREC.J,'T')                             
+         SYM = '(^__^)'                                                
+         DATA = OVERLAY(SYM,SCOPYREC.J)                                
+         "ISREDIT LINE_AFTER "TEMP" = DATALINE "'"'DATA'"'             
+         TEMP=TEMP+1                                                   
+         IF J = COPYREC.0 THEN                                         
+              LASTLINE = LASTLINE + COPYREC.0                          
+    END                                                                
+    EXPANDED = EXPANDED + 1                                            
+    RETURN                                                             
+
+
+
+sr
+==
+/* REX SEARCH PROGRAM */                
+VJOB=0                                  
+VPRC=0                                  
+VCTL=0                                  
+VCOB=0                                  
+VCPY=0                                  
+VDCL=0                                  
+VOPT=0                                  
+PDS.1=CD.NE.TSOU.PRODJCL                
+PDS.2=P.PROCLIB                         
+PDS.3=P.CTLCARDS                        
+PDS.4=SW.ENDV.SYU.PROD.FEPD.COB         
+PDS.5=SW.ENDV.SYU.PROD.FEPD.CPY         
+PDS.6=SW.ENDV.SYU.PROD.FEPD.DCL         
+PDS.7=SW.ENDV.SYU.PROD.FEPD.OPT         
+                                        
+PARSE ARG MEMBER                        
+                                        
+DO I = 1 TO 7 BY 1                      
+   CHECK='NOT OK'                       
+   FINAL=PDS.I'('||MEMBER||')'          
+   CHECK=SYSDSN("'"FINAL"'")            
+   IF I=1 & CHECK='OK' THEN DO          
+      VJOB=1                            
+      SAY 'PRESS 1 FOR JOB'             
+   END                                  
+   IF I=2 & CHECK='OK' THEN DO          
+      VPRC=1                            
+      SAY 'PRESS 2 FOR PRC'             
+   END                                  
+   IF I=3 & CHECK='OK' THEN DO          
+      VCTL=1                            
+      SAY 'PRESS 3 FOR CTL'             
+   END                                  
+      IF I=4 & CHECK='OK' THEN DO                  
+      VCOB=1                                    
+      SAY 'PRESS 4 FOR COB'                     
+   END                                          
+   IF I=5 & CHECK='OK' THEN DO                  
+      VCPY=1                                    
+      SAY 'PRESS 5 FOR CPY'                     
+   END                                          
+   IF I=6 & CHECK='OK' THEN DO                  
+      VDCL=1                                    
+      SAY 'PRESS 6 FOR DCL'                     
+   END                                          
+   IF I=7 & CHECK='OK' THEN DO                  
+      VOPT=1                                    
+      SAY 'PRESS 7 FOR OPT'                     
+   END                                          
+END                                             
+                                                
+IF VJOB == 0 &,                                 
+   VPRC == 0 &,                                 
+   VCTL == 0 &,                                 
+   VCOB == 0 &,                                 
+   VCPY == 0 &,                                 
+   VDCL == 0 &,                                 
+   VOPT == 0 THEN                               
+   SAY "ELEMENT NOT FOUND"                      
+ELSE DO                                         
+   SAY "ENTER YOUR CHOICE : "                   
+   PULL USERINP                                 
+   IF USERINP < 1 | USERINP > 7 THEN            
+      SAY "INVALID CHOICE"                      
+   ELSE DO                                      
+      FINAL=PDS.USERINP'('||MEMBER||')'         
+      ISPEXEC "VIEW DATASET('"FINAL"')"         
+   END                                          
+   END                                          
+              
+EXIT       
+
+
+cl
+==
+/*REXX TO REMOVE ALL EXPANDED COPYBOOK,DCLGEN LINES USING XP*/ 
+ADDRESS ISPEXEC 'CONTROL ERRORS RETURN'                        
+ADDRESS ISREDIT 'MACRO PROCESS'                                
+"ISREDIT X ALL '(^__^)' 1 6"                                   
+'ISREDIT DELETE ALL X'                                         
+EXIT                                                           
+
+
+rc1
+===
+/* REXX Program to recall all versions of GDG BASE */         
+/* How to use? see below command */                              
+/* HRECAL GDG_BASE_NAME */                                       
+/*-------PART 1 */                                               
+PARSE ARG GDG_BASE_NAME                                          
+                                                                 
+HRSTART=OUTTRAP('DSNSTEM.')                                      
+"LISTCAT LEVEL("GDG_BASE_NAME")"                                 
+HREND  =OUTTRAP('OFF')                                           
+                                                                 
+"ALLOCATE DDNAME(HRDD1) DSNAME('TE.PD.VINEETH.REXXOUT.HRECAL1')",
+                          "SHR REUSE"                            
+"EXECIO * DISKW HRDD1 (STEM DSNSTEM. FINIS"                      
+                                                                 
+                                                                 
+/*-------PART 2 */                                               
+"EXECIO * DISKR HRDD1 (STEM PSTEM. FINIS"                        
+j = 1                                                            
+GDG_BASE_QUAL=substr(GDG_BASE_NAME,1,5)                          
+DO I = 1 TO PSTEM.0 BY 1                                         
+   PARSE VAR PSTEM.I V1 V2 V3 V4 V5                              
+   V3SS = SUBSTR(V3,1,5)                                         
+   IF V3SS = GDG_BASE_QUAL THEN DO                               
+           OUT.J = V3                                            
+           j = j + 1                                             
+   end                                                           
+end                                                              
+                                                                 
+"ALLOCATE DDNAME(HRDD2) DSNAME('TE.PD.VINEETH.REXXOUT.HRECAL2')",
+                          "SHR REUSE"                            
+"EXECIO * DISKW HRDD2 (STEM OUT. FINIS"                          
+                                                                 
+/*-------PART 3 */                                               
+"EXECIO * DISKR HRDD2 (STEM PROCES. FINIS"                       
+                                        
+do i = 1 to proces.0 by 1               
+   proces_strip.i = strip(proces.i,both)
+   "HRECALL '"proces_strip.i"' NOWAIT"  
+end                                     
+
+
+vwbr
+====
+/* REXX    VWBR       Invoke View from Browse.
+
+       NOTE ::::      MUST    be invoked via the command table:
+                      SELECT CMD(%VWBR |&ZDSN |&ZMEM |&ZMEMB |&ZLINES)
+                      Requires POSIT macro.
+
+           Written by Frank Clarke, rexxhead@yahoo.com
+*/
+parse upper arg "|"zdsn "|"zmem "|"zmemb "|"zlines
+
+ebdsn   = Strip(zdsn)
+parse value  zmem zmemb             with  ebmem  .
+parse value  Strip(zlines,,0)  0    with  ebtl   .
+
+if ebmem <> "" then ebdsn = ebdsn"("ebmem")"
+
+address ISPEXEC
+"VPUT (ebtl) SHARED"
+"CONTROL NONDISPL ENTER"
+"VIEW DATASET('"ebdsn"') MACRO(POSIT) PROFILE(DEFAULT)"
+exit                                   /*@ VWBR                      */
+
+
