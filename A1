@@ -1,0 +1,82 @@
+/* REXX ---------------------------------------------------------*/
+/* DD Names:                                                     */
+/*   STRINGS - Search strings (1 per record)                     */
+/*   INPUT   - Source file                                       */
+/*   OUTPUT  - Report                                             */
+/*----------------------------------------------------------------*/
+
+ADDRESS TSO
+
+/* Read search strings */
+"EXECIO * DISKR STRINGS (STEM STR. FINIS"
+IF RC <> 0 THEN DO
+   SAY 'ERROR READING STRINGS'
+   EXIT 8
+END
+
+NUMSTR = STR.0
+
+/* Initialize */
+DO I = 1 TO NUMSTR
+   CNT.I = 0
+   MEMBERS.I = ""
+END
+
+/* Read source file */
+"EXECIO * DISKR INPUT (STEM IN. FINIS"
+IF RC <> 0 THEN DO
+   SAY 'ERROR READING INPUT'
+   EXIT 8
+END
+
+CURMEM = ''
+
+DO L = 1 TO IN.0
+
+   LINE = IN.L
+
+   /* Update current member when found */
+   IF POS('STRING(',LINE) > 0 THEN
+      CURMEM = STRIP(SUBSTR(LINE,3,8))
+
+   /* At most one string per line */
+   DO I = 1 TO NUMSTR
+      IF POS(STR.I,LINE) > 0 THEN DO
+         CNT.I = CNT.I + 1
+
+         IF CURMEM <> '' THEN
+            IF WORDPOS(CURMEM,MEMBERS.I) = 0 THEN
+               MEMBERS.I = MEMBERS.I CURMEM
+
+         LEAVE
+      END
+   END
+END
+
+/* Build output */
+OUT.0 = NUMSTR
+
+DO I = 1 TO NUMSTR
+   OUT.I = LEFT(STR.I,30) ||
+           RIGHT(CNT.I,6) || '  ' ||
+           MEMBERS.I
+END
+
+"EXECIO" OUT.0 "DISKW OUTPUT (STEM OUT. FINIS"
+
+EXIT 0
+
+
+//SEARCH   JOB ...
+//STEP1    EXEC PGM=IKJEFT01,DYNAMNBR=20
+//SYSEXEC  DD DISP=SHR,DSN=your.rexx.library
+//SYSTSPRT DD SYSOUT=*
+//SYSTSIN  DD *
+  %SEARCHMEM
+/*
+//STRINGS  DD DISP=SHR,DSN=your.search.string.dataset
+//INPUT    DD DISP=SHR,DSN=your.input.dataset
+//OUTPUT   DD DISP=(NEW,CATLG,DELETE),
+//            DSN=your.output.dataset,
+//            SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)
