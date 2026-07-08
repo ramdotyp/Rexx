@@ -1,0 +1,359 @@
+/* REXX */
+/*********************************************************************/
+/* FNDHRDEC                                                           */
+/*                                                                     */
+/* Scans every COBOL member in a source PDS end to end (all divisions */
+/* / sections - FILE, WORKING-STORAGE, LINKAGE, etc.) and reports     */
+/* every data-name:                                                   */
+/*   1) whose name contains 'HR' (anywhere, case-insensitive), AND    */
+/*   2) whose PIC/PICTURE clause defines exactly 2 decimal digits     */
+/*      (V99, V9(2), explicit .99, any USAGE - DISPLAY/COMP/COMP-3).  */
+/*                                                                     */
+/* PIC clauses (and any other clauses) split across multiple physical */
+/* lines are handled correctly: the whole member text is flattened    */
+/* into one continuous stream first, and THEN split into individual   */
+/* data-description entries on period boundaries. So something like:  */
+/*     05  WS-HR-RATE                                                 */
+/*             PIC S9(5)V99                                           */
+/*             COMP-3.                                                 */
+/* is joined into one statement before it is ever parsed, regardless  */
+/* of how many lines the entry spans.                                 */
+/*                                                                     */
+/* When a COPY statement is found anywhere in the member, the named   */
+/* copybook is pulled from the copybook PDS and scanned the same way, */
+/* so fields defined only in the copybook are also reported.          */
+/*                                                                     */
+/* Plain TSO REXX - no ISPF session required (uses LISTDS MEMBERS via */
+/* OUTTRAP to get the member list). Runs fine under ISPF option 6,    */
+/* TSO/E background, or IKJEFT01 in batch.                            */
+/*                                                                     */
+/*   EX 'your.exec.pds(FNDHRDEC)' 'SRCDSN COPYDSN OUTDSN'             */
+/*   or run with no parms and answer the three prompts.               */
+/*                                                                     */
+/* ASSUMES fixed-format COBOL: cols 1-6 sequence area, col 7 indicator*/
+/* (* or / = comment), cols 8-72 code area. Adjust the SUBSTR offsets */
+/* in READMEMBER if your shop uses a different layout or free format. */
+/*                                                                     */
+/* LIMITATIONS (lexical scan, not a full COBOL parser):                */
+/*  - A period embedded inside a quoted literal (e.g. VALUE 'A.B')    */
+/*    will be mistaken for a statement terminator. Rare in WS PIC     */
+/*    entries but review the report if your shop does this.           */
+/*  - REPLACING phrases on COPY statements are not evaluated.         */
+/*  - Group items (no PIC clause) are skipped, as expected.           */
+/*  - 88-level condition names are skipped.                           */
+/*********************************************************************/
+
+ADDRESS TSO
+ARG SRCDSN COPYDSN OUTDSN
+
+IF SRCDSN = '' THEN DO
+  SAY 'Source PDS containing COBOL members (no quotes):'
+  PARSE PULL SRCDSN
+END
+IF COPYDSN = '' THEN DO
+  SAY 'Copybook PDS (Enter = same as source):'
+  PARSE PULL COPYDSN
+  IF COPYDSN = '' THEN COPYDSN = SRCDSN
+END
+IF OUTDSN = '' THEN DO
+  SAY 'Output dataset to create for the report (e.g. USERID.HRDEC.REPORT):'
+  PARSE PULL OUTDSN
+END
+
+SRCDSN  = STRIP(SRCDSN)
+COPYDSN = STRIP(COPYDSN)
+OUTDSN  = STRIP(OUTDSN)
+
+outn = 1
+outline.1 = LEFT('MEMBER',12) LEFT('LEVEL',5) LEFT('VARIABLE-NAME',30) LEFT('PIC-CLAUSE',20) 'SOURCE'
+outn = outn + 1
+outline.outn = COPIES('-',110)
+
+/* ---- Get member list via plain TSO LISTDS ------------------------ */
+memlist. = ''
+memcount = 0
+
+"OUTTRAP TRAPVAR."
+"LISTDS '"SRCDSN"' MEMBERS"
+listRC = RC
+"OUTTRAP OFF"
+
+IF listRC > 4 THEN DO
+  SAY 'LISTDS failed for' SRCDSN 'RC='listRC
+  EXIT 8
+END
+
+inMembers = 0
+DO k = 1 TO TRAPVAR.0
+  ln = STRIP(TRAPVAR.k)
+  IF ln = '' THEN ITERATE
+  IF POS('MEMBERS',TRANSLATE(ln)) > 0 & POS('--',ln) > 0 THEN DO
+    inMembers = 1
+    ITERATE
+  END
+  IF inMembers = 1 THEN DO
+    m = WORD(ln,1)
+    IF m <> '' THEN DO
+      memcount = memcount + 1
+      memlist.memcount = m
+    END
+  END
+END
+
+IF memcount = 0 THEN DO
+  SAY 'No members found (or unexpected LISTDS format) for' SRCDSN
+  EXIT 8
+END
+
+SAY memcount 'member(s) found in' SRCDSN '- scanning...'
+
+DO mi = 1 TO memcount
+  membName = memlist.mi
+  SAY '  Scanning' membName '...'
+  CALL SCANMEMBER membName
+END
+
+/* ---- Write the report dataset ------------------------------------ */
+"ALLOC F(OUTREP) DA('"OUTDSN"') NEW CATALOG SPACE(5,5) TRACKS",
+  "RECFM(F B) LRECL(120) BLKSIZE(0) REUSE"
+IF RC <> 0 THEN DO
+  SAY 'Could not allocate output' OUTDSN 'RC='RC '- dumping to SYSOUT instead.'
+  DO k = 1 TO outn
+    SAY outline.k
+  END
+  EXIT 8
+END
+
+STEMOUT. = ''
+DO k = 1 TO outn
+  STEMOUT.k = outline.k
+END
+STEMOUT.0 = outn
+
+"EXECIO "outn" DISKW OUTREP (FINIS STEM STEMOUT."
+"FREE F(OUTREP)"
+
+SAY ' '
+SAY 'Done.' (outn-2) 'matching field(s) written to' OUTDSN
+EXIT 0
+
+/* =================================================================== */
+/* Reads one PDS member into a stem, flattens its entire text (all    */
+/* divisions/sections), and processes it. Also drives copybook scans   */
+/* triggered by COPY statements found inside that flattened text.      */
+/* =================================================================== */
+SCANMEMBER: PROCEDURE EXPOSE outline. outn SRCDSN COPYDSN
+  PARSE ARG membName
+
+  ddn = 'MBR'RIGHT(RANDOM(1,9999),4,'0')
+  "ALLOC F("ddn") DA('"SRCDSN"("membName")') SHR REUSE"
+  IF RC <> 0 THEN DO
+    SAY '    Could not allocate' membName 'RC='RC '- skipped'
+    RETURN
+  END
+
+  SRC. = ''
+  "EXECIO * DISKR "ddn" (FINIS STEM SRC."
+  "FREE F("ddn")"
+
+  wsText = EXTRACTWS(SRC., 1)
+  CALL SCANSTATEMENTS wsText, membName, membName
+
+  RETURN
+
+/* =================================================================== */
+/* Reads a copybook member into a stem and processes its FULL text     */
+/* (copybooks have no division/section headers of their own, so the    */
+/* entire member is treated as in-scope).                              */
+/* =================================================================== */
+SCANCOPY: PROCEDURE EXPOSE outline. outn COPYDSN
+  PARSE ARG cpyName, ownerMember
+
+  ddn = 'CPY'RIGHT(RANDOM(1,9999),4,'0')
+  "ALLOC F("ddn") DA('"COPYDSN"("cpyName")') SHR REUSE"
+  IF RC <> 0 THEN DO
+    SAY '     Copybook' cpyName 'not found in' COPYDSN '(RC='RC') - skipped'
+    RETURN
+  END
+
+  CPY. = ''
+  "EXECIO * DISKR "ddn" (FINIS STEM CPY."
+  "FREE F("ddn")"
+
+  cpyText = EXTRACTWS(CPY., 1)
+  label = ownerMember'/COPY:'cpyName
+  CALL SCANSTATEMENTS cpyText, cpyName, label
+
+  RETURN
+
+/* =================================================================== */
+/* Strips sequence numbers/comment indicator from a source stem and    */
+/* returns ONE flattened string of the source text (fullScope=1: the   */
+/* whole member/copybook; fullScope=0 kept available if you want to    */
+/* restrict a future run back down to just the WORKING-STORAGE         */
+/* SECTION - see EXTRACTWS's SECTION-tracking branch below). This is   */
+/* what makes multi-line PIC clauses trivial to handle - by the time   */
+/* we split on periods, line boundaries no longer matter at all.       */
+/* =================================================================== */
+EXTRACTWS: PROCEDURE
+  PARSE ARG stemName, fullScope
+  n = VALUE(stemName'0')
+
+  inWS = (fullScope = 1)
+  flat = ''
+
+  DO i = 1 TO n
+    rawline = VALUE(stemName||i)
+
+    IF LENGTH(rawline) >= 7 THEN DO
+      indicator = SUBSTR(rawline,7,1)
+      body = SUBSTR(rawline,8,65)
+    END
+    ELSE DO
+      indicator = ' '
+      body = rawline
+    END
+
+    IF indicator = '*' | indicator = '/' THEN ITERATE
+
+    body = STRIP(body,'T')
+    IF body = '' THEN ITERATE
+
+    IF fullScope = 0 THEN DO
+      upBody = TRANSLATE(body)
+      IF POS('WORKING-STORAGE SECTION',upBody) > 0 THEN DO
+        inWS = 1
+        ITERATE
+      END
+      IF inWS = 1 THEN DO
+        IF (POS(' SECTION.',' 'upBody) > 0 ,
+            | POS('PROCEDURE DIVISION',upBody) > 0) THEN DO
+          inWS = 0
+        END
+      END
+    END
+
+    IF inWS = 0 THEN ITERATE
+
+    /* Append with a single blank separator - this is what lets a     */
+    /* clause split across N physical lines become one text stream.   */
+    flat = flat' 'body
+  END
+
+  RETURN STRIP(flat)
+
+/* =================================================================== */
+/* Splits the flattened text on periods into individual COBOL          */
+/* data-description entries / COPY statements, and evaluates each.     */
+/* Because EXTRACTWS already joined every continuation line, a PIC     */
+/* clause that was split across 3 lines in the source arrives here as  */
+/* one unbroken statement string - no special continuation logic is    */
+/* needed at this stage.                                               */
+/* =================================================================== */
+SCANSTATEMENTS: PROCEDURE EXPOSE outline. outn COPYDSN
+  PARSE ARG flatText, lbl, srcLabel
+
+  work = flatText
+  DO WHILE work <> ''
+    dotpos = POS('.',work)
+    IF dotpos = 0 THEN DO
+      stmt = work
+      work = ''
+    END
+    ELSE DO
+      stmt = SUBSTR(work,1,dotpos-1)
+      work = SUBSTR(work,dotpos+1)
+    END
+
+    stmt = STRIP(stmt)
+    IF stmt = '' THEN ITERATE
+
+    upStmt = TRANSLATE(stmt)
+
+    /* ---- COPY statement ------------------------------------------- */
+    IF WORD(upStmt,1) = 'COPY' THEN DO
+      cpyName = WORD(upStmt,2)
+      cpyName = STRIP(cpyName,'B',"'")
+      cpyName = STRIP(cpyName,'B','"')
+      IF cpyName <> '' THEN CALL SCANCOPY cpyName, lbl
+      ITERATE
+    END
+
+    /* ---- level-number + data-name + PIC ---------------------------- */
+    lvl = WORD(upStmt,1)
+    IF DATATYPE(lvl,'W') = 0 THEN ITERATE      /* not a level entry     */
+    IF lvl = 88 THEN ITERATE                   /* condition-name        */
+
+    varName = WORD(upStmt,2)
+    IF varName = '' THEN ITERATE
+    IF varName = 'PIC' | varName = 'PICTURE' | varName = 'REDEFINES' THEN ITERATE
+
+    IF POS('HR',varName) = 0 THEN ITERATE      /* must contain HR       */
+
+    useStmt = ' 'upStmt' '
+    kwLen = 4
+    p = POS(' PIC ',useStmt)
+    IF p = 0 THEN DO
+      p = POS(' PICTURE ',useStmt)
+      IF p > 0 THEN kwLen = 9
+    END
+    IF p = 0 THEN ITERATE                      /* group item, no PIC    */
+
+    rest = STRIP(SUBSTR(useStmt,p+kwLen))
+    bpos = POS(' ',rest)
+    IF bpos = 0 THEN picStr = rest
+    ELSE picStr = SUBSTR(rest,1,bpos-1)
+    picStr = STRIP(picStr)
+
+    decDigits = DECIMALCOUNT(picStr)
+
+    IF decDigits = 2 THEN DO
+      outn = outn + 1
+      outline.outn = LEFT(lbl,12) LEFT(lvl,5) LEFT(varName,30) LEFT(picStr,20) srcLabel
+    END
+  END
+
+  RETURN
+
+/* =================================================================== */
+/* Sums the fractional (decimal) digit count implied by a PIC string.  */
+/* Handles implied decimal V and explicit '.', with 9(n)/P(n) repeat.  */
+/* Returns -1 if the picture has no decimal marker at all.             */
+/* =================================================================== */
+DECIMALCOUNT: PROCEDURE
+  PARSE ARG pic
+  pic = TRANSLATE(pic)
+
+  vpos = POS('V',pic)
+  dpos = POS('.',pic)
+  IF vpos = 0 & dpos = 0 THEN RETURN -1
+
+  IF vpos = 0 THEN marker = dpos
+  ELSE IF dpos = 0 THEN marker = vpos
+  ELSE marker = MIN(vpos,dpos)
+
+  frac = SUBSTR(pic,marker+1)
+  cnt = 0
+
+  DO WHILE frac <> ''
+    ch = LEFT(frac,1)
+    IF ch = '9' | ch = 'P' | ch = 'Z' | ch = '0' THEN DO
+      IF SUBSTR(frac,2,1) = '(' THEN DO
+        closeP = POS(')',frac)
+        IF closeP = 0 THEN DO
+          frac = ''
+          ITERATE
+        END
+        num = SUBSTR(frac,3,closeP-3)
+        IF DATATYPE(num,'W') THEN cnt = cnt + num
+        frac = SUBSTR(frac,closeP+1)
+      END
+      ELSE DO
+        cnt = cnt + 1
+        frac = SUBSTR(frac,2)
+      END
+    END
+    ELSE frac = SUBSTR(frac,2)   /* sign or other char - skip */
+  END
+
+  RETURN cnt
