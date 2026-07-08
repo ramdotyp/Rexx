@@ -1,82 +1,139 @@
-/* REXX ---------------------------------------------------------*/
-/* DD Names:                                                     */
-/*   STRINGS - Search strings (1 per record)                     */
-/*   INPUT   - Source file                                       */
-/*   OUTPUT  - Report                                             */
-/*----------------------------------------------------------------*/
+/* REXX **************************************************************/
+/* Scan COBOL members for HR variables with exactly 2 decimal places */
+/**********************************************************************/
 
 ADDRESS TSO
+ADDRESS ISPEXEC
 
-/* Read search strings */
-"EXECIO * DISKR STRINGS (STEM STR. FINIS"
+PDS = "'YOUR.COBOL.PDS'"
+
+"LMINIT DATAID(DATAID) DATASET("PDS") ENQ(SHRW)"
 IF RC <> 0 THEN DO
-   SAY 'ERROR READING STRINGS'
+   SAY "LMINIT FAILED RC="RC
    EXIT 8
 END
 
-NUMSTR = STR.0
-
-/* Initialize */
-DO I = 1 TO NUMSTR
-   CNT.I = 0
-   MEMBERS.I = ""
-END
-
-/* Read source file */
-"EXECIO * DISKR INPUT (STEM IN. FINIS"
+"LMOPEN DATAID("DATAID") OPTION(INPUT)"
 IF RC <> 0 THEN DO
-   SAY 'ERROR READING INPUT'
+   SAY "LMOPEN FAILED RC="RC
    EXIT 8
 END
 
-CURMEM = ''
+SAY
+SAY "MEMBER   VARIABLE                      DEFINITION"
+SAY "-------- ----------------------------- --------------------------------"
 
-DO L = 1 TO IN.0
+DO FOREVER
 
-   LINE = IN.L
+   MEMBER=""
 
-   /* Update current member when found */
-   IF POS('STRING(',LINE) > 0 THEN
-      CURMEM = STRIP(SUBSTR(LINE,3,8))
+   "LMMLIST DATAID("DATAID") OPTION(LIST) MEMBER(MEMBER)"
 
-   /* At most one string per line */
-   DO I = 1 TO NUMSTR
-      IF POS(STR.I,LINE) > 0 THEN DO
-         CNT.I = CNT.I + 1
+   IF RC<>0 THEN LEAVE
 
-         IF CURMEM <> '' THEN
-            IF WORDPOS(CURMEM,MEMBERS.I) = 0 THEN
-               MEMBERS.I = MEMBERS.I CURMEM
+   DDNAME="SYSUT1"
+
+   "ALLOC FI("DDNAME") DA("PDS"("MEMBER")) SHR REUSE"
+
+   "EXECIO * DISKR "DDNAME" (STEM REC. FINIS"
+
+   "FREE FI("DDNAME")"
+
+   INWS=0
+   DEF=""
+
+   DO I=1 TO REC.0
+
+      LINE=TRANSLATE(REC.I)
+
+      IF POS("WORKING-STORAGE SECTION",LINE)>0 THEN DO
+         INWS=1
+         ITERATE
+      END
+
+      IF INWS=0 THEN ITERATE
+
+      IF POS("PROCEDURE DIVISION",LINE)>0 |,
+         POS("LINKAGE SECTION",LINE)>0 |,
+         POS("LOCAL-STORAGE SECTION",LINE)>0 THEN DO
+
+         IF DEF<>"" THEN
+            CALL CHECKDEF MEMBER,DEF
 
          LEAVE
       END
+
+      S=STRIP(LINE)
+
+      IF S="" THEN ITERATE
+      IF SUBSTR(S,1,1)="*" THEN ITERATE
+
+      PARSE VAR S LVL REST
+
+      IF DATATYPE(LVL,'W') THEN DO
+
+         IF DEF<>"" THEN
+            CALL CHECKDEF MEMBER,DEF
+
+         DEF=S
+
+      END
+      ELSE DO
+
+         DEF=DEF" "S
+
+      END
+
    END
+
+   IF DEF<>"" THEN
+      CALL CHECKDEF MEMBER,DEF
+
 END
 
-/* Build output */
-OUT.0 = NUMSTR
-
-DO I = 1 TO NUMSTR
-   OUT.I = LEFT(STR.I,30) ||
-           RIGHT(CNT.I,6) || '  ' ||
-           MEMBERS.I
-END
-
-"EXECIO" OUT.0 "DISKW OUTPUT (STEM OUT. FINIS"
+"LMCLOSE DATAID("DATAID")"
+"LMFREE DATAID("DATAID")"
 
 EXIT 0
 
 
-//SEARCH   JOB ...
-//STEP1    EXEC PGM=IKJEFT01,DYNAMNBR=20
-//SYSEXEC  DD DISP=SHR,DSN=your.rexx.library
-//SYSTSPRT DD SYSOUT=*
-//SYSTSIN  DD *
-  %SEARCHMEM
-/*
-//STRINGS  DD DISP=SHR,DSN=your.search.string.dataset
-//INPUT    DD DISP=SHR,DSN=your.input.dataset
-//OUTPUT   DD DISP=(NEW,CATLG,DELETE),
-//            DSN=your.output.dataset,
-//            SPACE=(TRK,(5,5)),
-//            DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)
+CHECKDEF:
+
+PARSE ARG MEMBER,DEF
+
+U=TRANSLATE(DEF)
+
+IF POS("PIC",U)=0 THEN
+   RETURN
+
+PARSE VAR U LEVEL VAR REST
+
+IF VAR="" THEN
+   RETURN
+
+IF POS("HR",VAR)=0 THEN
+   RETURN
+
+/* Normalize PIC formats */
+
+U=CHANGESTR("V9(02)","V99",U)
+U=CHANGESTR("V9(2)","V99",U)
+U=CHANGESTR(".9(02)",".99",U)
+U=CHANGESTR(".9(2)",".99",U)
+
+MATCH=0
+
+P=POS("V99",U)
+IF P>0 THEN
+   IF SUBSTR(U,P+3,1)<>"9" THEN
+      MATCH=1
+
+P=POS(".99",U)
+IF P>0 THEN
+   IF SUBSTR(U,P+3,1)<>"9" THEN
+      MATCH=1
+
+IF MATCH THEN
+   SAY LEFT(MEMBER,8) LEFT(VAR,29) DEF
+
+RETURN
