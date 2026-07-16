@@ -1,0 +1,35 @@
+Interestingly, there are no ambiguous cases if all of the following are true:
+
+The original time was an integer number of minutes (0–59).
+It was converted to hours by dividing by 60.
+It was then rounded to 2 decimal places.
+
+--
+If you know the total hours before the split (or can reconstruct the total minutes first):
+
+Reconstruct the total minutes from the rounded hours.
+Split the integer minutes across departments according to the percentages.
+Use an allocation method (such as the largest remainder method) to distribute any leftover minute(s) so that:
+the department totals sum exactly to the original minutes,
+each department receives a whole number of minutes,
+the allocation is as close as possible to the requested percentages.
+--
+
+For your case:
+
+If 8.27 hours is the official payroll value → use hundredths-of-hour reconciliation.
+If 8.27 is only a display of underlying minutes → use minute allocation and reconcile display afterward.
+
+Both methods are mathematically the same concept; only the allocation unit changes.
+
+
+
+***
+In our payroll processing , we receive hours worked with minutes part converted to 1/60th of hour. 
+Like 16 minutes is received as 0.27 hours after rounding to 2 decimals. 
+I want to convert this back to 0.266666667 without rounding. How can I do that?
+
+
+If the rounded hours is split by no. of departments what would be the impact
+***
+
