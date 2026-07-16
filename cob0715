@@ -1,0 +1,238 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. PAYROLL-MINUTE-SPLIT.
+
+       DATA DIVISION.
+
+       WORKING-STORAGE SECTION.
+
+       01 WS-INPUT-HOURS              PIC 9(5)V99 COMP-3
+                                      VALUE 8.27.
+
+       01 WS-WHOLE-HOURS              PIC 9(5) COMP-3.
+       01 WS-FRACTION-MINUTES         PIC 99V99 COMP-3.
+
+       01 WS-TOTAL-MINUTES            PIC 9(7) COMP-3.
+
+
+       01 WS-DEPT-COUNT               PIC 99 COMP-3
+                                      VALUE 3.
+
+       01 WS-IDX                      PIC 99 COMP-3.
+
+       01 WS-SUM-MINUTES              PIC 9(7)
+                                      COMP-3.
+
+       01 WS-LEFTOVER                 PIC 99 COMP-3.
+
+       01 WS-MAX-REMAINDER            PIC 9V9999 COMP-3.
+       01 WS-MAX-INDEX                PIC 99 COMP-3.
+
+
+       01 WS-DISPLAY-TOTAL            PIC 9(5)V99 COMP-3.
+       01 WS-DISPLAY-DIFF             PIC S9V99 COMP-3.
+
+
+       01 DEPT-TABLE.
+
+          05 DEPT-ENTRY OCCURS 10 TIMES.
+
+             10 DEPT-PERCENT          PIC 9V9999 COMP-3.
+
+             10 EXACT-MINUTES         PIC 9(7)V9999 COMP-3.
+
+             10 ALLOC-MINUTES         PIC 9(7) COMP-3.
+
+             10 MIN-REMAINDER         PIC 9V9999 COMP-3.
+
+             10 EXACT-HOURS           PIC 9(5)V999999 COMP-3.
+
+             10 DISPLAY-HOURS         PIC 9(5)V99 COMP-3.
+
+
+       PROCEDURE DIVISION.
+
+
+      *-----------------------------------------------*
+      * Percentages
+      *-----------------------------------------------*
+
+           MOVE .4500 TO DEPT-PERCENT(1)
+           MOVE .3500 TO DEPT-PERCENT(2)
+           MOVE .2000 TO DEPT-PERCENT(3)
+
+
+      *-----------------------------------------------*
+      * Convert rounded hours back to minutes
+      *-----------------------------------------------*
+
+           COMPUTE WS-WHOLE-HOURS =
+               FUNCTION INTEGER(WS-INPUT-HOURS)
+
+
+           COMPUTE WS-FRACTION-MINUTES ROUNDED =
+              (WS-INPUT-HOURS
+               - WS-WHOLE-HOURS) * 60
+
+
+           COMPUTE WS-TOTAL-MINUTES =
+              (WS-WHOLE-HOURS * 60)
+              + WS-FRACTION-MINUTES
+
+
+
+      *-----------------------------------------------*
+      * Allocate minutes using Largest Remainder
+      *-----------------------------------------------*
+
+           MOVE ZERO TO WS-SUM-MINUTES
+
+
+           PERFORM VARYING WS-IDX FROM 1 BY 1
+              UNTIL WS-IDX > WS-DEPT-COUNT
+
+
+              COMPUTE EXACT-MINUTES(WS-IDX) =
+                 WS-TOTAL-MINUTES *
+                 DEPT-PERCENT(WS-IDX)
+
+
+              COMPUTE ALLOC-MINUTES(WS-IDX) =
+                 FUNCTION INTEGER(
+                    EXACT-MINUTES(WS-IDX))
+
+
+              COMPUTE MIN-REMAINDER(WS-IDX) =
+                    EXACT-MINUTES(WS-IDX)
+                    - ALLOC-MINUTES(WS-IDX)
+
+
+              ADD ALLOC-MINUTES(WS-IDX)
+                  TO WS-SUM-MINUTES
+
+
+           END-PERFORM
+
+
+
+           COMPUTE WS-LEFTOVER =
+                WS-TOTAL-MINUTES
+                - WS-SUM-MINUTES
+
+
+
+      *-----------------------------------------------*
+      * Give leftover minutes
+      *-----------------------------------------------*
+
+           PERFORM UNTIL WS-LEFTOVER = ZERO
+
+
+              MOVE ZERO TO WS-MAX-REMAINDER
+              MOVE ZERO TO WS-MAX-INDEX
+
+
+              PERFORM VARYING WS-IDX FROM 1 BY 1
+                 UNTIL WS-IDX > WS-DEPT-COUNT
+
+
+                 IF MIN-REMAINDER(WS-IDX)
+                    > WS-MAX-REMAINDER
+
+                    MOVE MIN-REMAINDER(WS-IDX)
+                         TO WS-MAX-REMAINDER
+
+                    MOVE WS-IDX
+                         TO WS-MAX-INDEX
+
+                 END-IF
+
+
+              END-PERFORM
+
+
+              ADD 1
+                  TO ALLOC-MINUTES(WS-MAX-INDEX)
+
+
+              MOVE ZERO
+                   TO MIN-REMAINDER(WS-MAX-INDEX)
+
+
+              SUBTRACT 1
+                  FROM WS-LEFTOVER
+
+
+           END-PERFORM
+
+
+
+      *-----------------------------------------------*
+      * Convert minutes to display hours
+      *-----------------------------------------------*
+
+           MOVE ZERO TO WS-DISPLAY-TOTAL
+
+
+           PERFORM VARYING WS-IDX FROM 1 BY 1
+              UNTIL WS-IDX > WS-DEPT-COUNT
+
+
+              COMPUTE EXACT-HOURS(WS-IDX) =
+                  ALLOC-MINUTES(WS-IDX) / 60
+
+
+              COMPUTE DISPLAY-HOURS(WS-IDX) ROUNDED =
+                  EXACT-HOURS(WS-IDX)
+
+
+              ADD DISPLAY-HOURS(WS-IDX)
+                  TO WS-DISPLAY-TOTAL
+
+
+           END-PERFORM
+
+
+
+      *-----------------------------------------------*
+      * Reconcile displayed hours
+      *-----------------------------------------------*
+
+           COMPUTE WS-DISPLAY-DIFF =
+                WS-INPUT-HOURS
+                - WS-DISPLAY-TOTAL
+
+
+
+           IF WS-DISPLAY-DIFF NOT = ZERO
+
+              ADD WS-DISPLAY-DIFF
+                  TO DISPLAY-HOURS(1)
+
+           END-IF
+
+
+
+      *-----------------------------------------------*
+      * Output
+      *-----------------------------------------------*
+
+           DISPLAY "TOTAL MINUTES = "
+                   WS-TOTAL-MINUTES
+
+
+           PERFORM VARYING WS-IDX FROM 1 BY 1
+              UNTIL WS-IDX > WS-DEPT-COUNT
+
+
+              DISPLAY "DEPT "
+                      WS-IDX
+                      " MINUTES = "
+                      ALLOC-MINUTES(WS-IDX)
+                      " HOURS = "
+                      DISPLAY-HOURS(WS-IDX)
+
+
+           END-PERFORM
+
+
+           GOBACK.
