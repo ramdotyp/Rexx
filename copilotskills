@@ -1,0 +1,20 @@
+your-mainframe-repository/
+├── cobol/
+├── cpy/
+├── dcl/
+├── jcl/
+└── .github/
+    ├── copilot-instructions.md
+    └── skills/
+        ├── cobol-program-understanding/
+        ├── functional-spec-generator/
+        ├── payroll-run-investigator/
+        ├── employee-payroll-simulator/
+        ├── production-qa-comparator/
+        └── ... 22 additional skills
+
+Use the payroll-run-investigator skill.Investigate why the employer 401(k) match for this employee is different from the expected value.
+  Analyze the attached job logs, reconstruct every relevant transaction in processing order, and trace the corresponding COBOL/DB2 logic.
+  Provide two separate notes: a Business Investigation explaining the result and a Technical Recommended Fix identifying program changes 
+only if a code defect is confirmed.Cite the actual log entries and source-code locations. Do not modify source or execute jobs.
+
