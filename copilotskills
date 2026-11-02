@@ -18,3 +18,13 @@ Use the payroll-run-investigator skill.Investigate why the employer 401(k) match
   Provide two separate notes: a Business Investigation explaining the result and a Technical Recommended Fix identifying program changes 
 only if a code defect is confirmed.Cite the actual log entries and source-code locations. Do not modify source or execute jobs.
 
+
+propertyGroups:
+  - name: payroll-cobol
+    language: cobol
+    libraries:
+      - name: syslib
+        type: local
+        locations:
+          - "cpy"
+          - "dcl"
