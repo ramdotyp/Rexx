@@ -1,4 +1,22 @@
 
+//DBRMSCAN JOB (ACCT),'DBRM SCAN',
+//             CLASS=A,MSGCLASS=X,
+//             NOTIFY=&SYSUID
+//*
+//STEP01   EXEC PGM=IKJEFT01,DYNAMNBR=50,
+// PARM='%DBRMINFO YOUR.APP.DBRMLIB'
+//*
+//SYSEXEC  DD DSN=YOUR.REXX.LIB,DISP=SHR
+//SYSTSPRT DD SYSOUT=*
+//SYSTSIN  DD DUMMY
+//SYSPRINT DD SYSOUT=*
+//REPORT   DD DSN=YOUR.DBRM.REPORT.CSV,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,
+//             SPACE=(TRK,(10,10),RLSE),
+//             DCB=(RECFM=VB,LRECL=256,BLKSIZE=0)
+
+
 /* REXX - DBRMINFO                                    */
 /* Scan DBRMLIB and generate package metadata CSV     */
 /* Input : DBRM PDS supplied as first parameter       */
