@@ -1,0 +1,129 @@
+
+/* REXX - DBRMINFO                                    */
+/* Scan DBRMLIB and generate package metadata CSV     */
+/* Input : DBRM PDS supplied as first parameter       */
+/* Output: REPORT DD                                  */
+
+ADDRESS TSO
+PARSE UPPER ARG DBRMLIB
+
+IF DBRMLIB = '' THEN DO
+  SAY 'ERROR: DBRMLIB DATASET REQUIRED'
+  EXIT 12
+END
+
+DBRMLIB = STRIP(DBRMLIB, 'B', "'")
+
+IF SYSDSN("'"DBRMLIB"'") <> 'OK' THEN DO
+  SAY 'ERROR: DATASET NOT FOUND:' DBRMLIB
+  EXIT 12
+END
+
+/* Obtain PDS member directory */
+X = OUTTRAP('DIR.')
+"LISTDS '"DBRMLIB"' MEMBERS"
+LRC = RC
+X = OUTTRAP('OFF')
+
+IF LRC <> 0 THEN DO
+  SAY 'ERROR: LISTDS FAILED RC=' LRC
+  EXIT 12
+END
+
+/* Locate start of member names */
+START = 0
+DO I = 1 TO DIR.0
+  IF STRIP(DIR.I) = '--MEMBERS--' THEN DO
+    START = I + 1
+    LEAVE
+  END
+END
+
+IF START = 0 THEN DO
+  SAY 'ERROR: MEMBER DIRECTORY NOT FOUND'
+  EXIT 12
+END
+
+/* Output CSV header */
+OUT.1 = 'MEMBER,DBRM_NAME,VERSION,CONTOKEN,STATUS'
+NOUT = 1
+COUNT = 0
+ERRORS = 0
+
+DO I = START TO DIR.0
+
+  MEMBER = WORD(STRIP(DIR.I),1)
+  IF MEMBER = '' THEN ITERATE
+
+  COUNT = COUNT + 1
+  PGM = ''
+  VERSION = ''
+  TOKEN = ''
+  STATUS = 'OK'
+
+  /* Open individual DBRM member */
+  DSNAME = "'"DBRMLIB"("MEMBER")'"
+
+  "ALLOC FI(DBRMIN) DA("DSNAME") SHR"
+  IF RC <> 0 THEN DO
+    STATUS = 'ALLOC_FAILED'
+    ERRORS = ERRORS + 1
+  END
+  ELSE DO
+
+    /* Read first two 80-byte records */
+    DROP REC.
+    "EXECIO 2 DISKR DBRMIN (STEM REC. FINIS"
+    READRC = RC
+
+    "FREE FI(DBRMIN)"
+
+    IF READRC <> 0 | REC.0 < 2 THEN DO
+      STATUS = 'READ_FAILED'
+      ERRORS = ERRORS + 1
+    END
+    ELSE IF SUBSTR(REC.1,1,4) <> 'DBRM' THEN DO
+      STATUS = 'NOT_DB​RM'
+      ERRORS = ERRORS + 1
+    END
+    ELSE DO
+
+      /* Internal DBRM program name */
+      PGM = STRIP(SUBSTR(REC.1,17,8))
+
+      /* Binary consistency token */
+      TOKEN = C2X(SUBSTR(REC.1,25,8))
+
+      /* Version field: legacy DBRM layout */
+      /* Verify mapping for your DBRM format */
+      VERSION = STRIP(SUBSTR(REC.2,3,64))
+
+      IF VERSION = '' THEN VERSION = '(BLANK)'
+
+      /* Mark version for layout verification */
+      STATUS = 'CHECK_VERSION'
+
+    END
+  END
+
+  /* Format CSV record */
+  NOUT = NOUT + 1
+  OUT.NOUT = MEMBER||','||PGM||','||,
+             VERSION||','||TOKEN||','||STATUS
+
+END
+
+/* Write report to sequential output dataset */
+"EXECIO" NOUT "DISKW REPORT (STEM OUT. FINIS"
+WRITERC = RC
+
+SAY '--------------------------------------'
+SAY 'DBRM MEMBERS PROCESSED:' COUNT
+SAY 'READ ERRORS           :' ERRORS
+SAY 'REPORT RECORDS        :' NOUT
+SAY 'REPORT WRITE RC       :' WRITERC
+SAY '--------------------------------------'
+
+IF WRITERC <> 0 THEN EXIT 12
+IF ERRORS > 0 THEN EXIT 4
+EXIT 0
